@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Patients.Model;
+using Patients.Model.Entities;
 using Patients.Services.Interfaces;
 
 namespace Patients.Api.Controllers

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Patients.Model;
+using Patients.Model.Entities;
 
 namespace Patients.Services.Interfaces
 {

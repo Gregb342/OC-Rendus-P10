@@ -1,11 +1,11 @@
-﻿using Patients.Model;
-using Patients.Services.Interfaces;
+﻿using Patients.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Patients.Repository.Interfaces;
+using Patients.Model.Entities;
 
 namespace Patients.Services
 {

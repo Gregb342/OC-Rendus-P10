@@ -1,4 +1,4 @@
-﻿using Patients.Model;
+﻿using Patients.Model.Entities;
 using Patients.Repository.Interfaces;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿namespace Patients.Model
+﻿namespace Patients.Model.Entities
 {
     public class Patient
     {
