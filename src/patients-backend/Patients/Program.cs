@@ -13,7 +13,7 @@ namespace Patients.Api
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("PatientsDb")));
 
             builder.Services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -64,6 +64,8 @@ namespace Patients.Api
 
 
             app.MapControllers();
+
+            app.MapGet("/", () => "Patients microservice is running!");
 
             app.Run();
         }
