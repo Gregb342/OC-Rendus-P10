@@ -1,4 +1,4 @@
-@Patients_HostAddress = http://localhost:5141
+@Patients_HostAddress = http://localhost:5082
 
 GET {{Patients_HostAddress}}/weatherforecast/
 Accept: application/json
