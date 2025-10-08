@@ -32,6 +32,11 @@ namespace Patients.Controllers
         {
             try
             {
+                _logger.LogInformation("GetPatients called. User: " + User?.Identity?.Name);
+                
+                var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+                _logger.LogInformation($"Authorization header: {authHeader ?? "None"}");
+                
                 var patients = await _patientService.GetAllPatientsAsync();
                 var patientDtos = patients.Select(p => new PatientDto
                 {
