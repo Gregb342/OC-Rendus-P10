@@ -9,6 +9,9 @@ using Patients.Domain.Services.Interfaces;
 using Patients.Infrastructure.Repositories;
 using Patients.Infrastructure.Repositories.Interfaces;
 using System.Text;
+using Serilog;
+using Serilog.Sinks.Graylog;
+using Serilog.Sinks.Graylog.Core.Transport;
 
 namespace Patients
 {
@@ -52,6 +55,22 @@ namespace Patients
                     }
                 });
             });
+
+            // Configure Logger
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .WriteTo.Graylog(new GraylogSinkOptions
+                {
+                    HostnameOrAddress = "localhost",
+                    Port = 12201,
+                    TransportType = TransportType.Udp,
+                    Facility = "MyDotNetApp",
+                    ShortMessageMaxLength = 5000
+                })
+                .CreateLogger();
+
+            builder.Host.UseSerilog();
 
             // Configure database
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
