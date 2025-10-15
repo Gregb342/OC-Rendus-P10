@@ -1,8 +1,7 @@
 name: "graylog"
-
 services:
   mongodb:
-    image: mongo:7.0
+    image: mongo:6.0
     container_name: mongodb
     restart: unless-stopped
     networks:
@@ -11,11 +10,11 @@ services:
       - mongo_data:/data/db
 
   opensearch:
-    image: opensearchproject/opensearch:2.16.0
+    image: opensearchproject/opensearch:1.3.17
     container_name: opensearch
     environment:
       - discovery.type=single-node
-      - DISABLE_SECURITY_PLUGIN=true
+      - plugins.security.disabled=true
       - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
     ulimits:
       memlock:
@@ -29,7 +28,7 @@ services:
       - opensearch_data:/usr/share/opensearch/data
 
   opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:2.16.0
+    image: opensearchproject/opensearch-dashboards:1.3.17
     container_name: opensearch-dashboards
     environment:
       - OPENSEARCH_HOSTS=http://opensearch:9200
@@ -39,30 +38,25 @@ services:
     networks:
       - graylog
     ports:
-      - "5601:5601"   # Interface web d'OpenSearch Dashboards
+      - "5601:5601"
 
   graylog:
-    image: graylog/graylog:6.3.4
+    image: graylog/graylog:4.3
     container_name: graylog
     depends_on:
       - mongodb
       - opensearch
     environment:
-      # Base Graylog config
-      - GRAYLOG_NODE_ID_FILE=/usr/share/graylog/data/config/node-id
       - GRAYLOG_PASSWORD_SECRET=somepasswordpepper
       - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918  # SHA2("admin")
       - GRAYLOG_HTTP_EXTERNAL_URI=http://localhost:9000/
-      # Connexion à Mongo et OpenSearch
-      - GRAYLOG_MONGODB_URI=mongodb://mongodb:27017/graylog
       - GRAYLOG_ELASTICSEARCH_HOSTS=http://opensearch:9200
-      # Activer GELF UDP pour Serilog
-      - GRAYLOG_UDP_INPUT=12201
+      - GRAYLOG_MONGODB_URI=mongodb://mongodb:27017/graylog
     networks:
       - graylog
     ports:
-      - "9000:9000"   # Interface Web Graylog
-      - "12201:12201/udp"  # Port GELF UDP pour Serilog
+      - "9000:9000"
+      - "12201:12201/udp"
     volumes:
       - graylog_data:/usr/share/graylog/data
 

@@ -62,7 +62,7 @@ namespace Patients
                 .WriteTo.Console()
                 .WriteTo.Graylog(new GraylogSinkOptions
                 {
-                    HostnameOrAddress = "localhost",
+                    HostnameOrAddress = "127.0.0.1",
                     Port = 12201,
                     TransportType = TransportType.Udp,
                     Facility = "MyDotNetApp",
