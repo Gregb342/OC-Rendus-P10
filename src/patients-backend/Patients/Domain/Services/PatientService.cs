@@ -151,7 +151,7 @@ namespace Patients.Domain.Services
             {
                 Patient existingPatient = await _patientRepository.GetByIdAsync(id);
 
-                if (existingPatient != null)
+                if (existingPatient == null)
                 {
                     _logger.LogWarning("Patient with ID {PatientId} not found for update", id);
                 }
@@ -168,7 +168,7 @@ namespace Patients.Domain.Services
                     _logger.LogDebug("Processing address update for patient {PatientId}: {City}, {Country}",
                         id, patientUpdateDto.Address.City, patientUpdateDto.Address.Country);
 
-                    if (existingPatient.Address != null)
+                    if (existingPatient.PatientAddress != null)
                     {
                         // Update existing address
                         _logger.LogDebug("Updating existing address {AddressId} for patient {PatientId}",
