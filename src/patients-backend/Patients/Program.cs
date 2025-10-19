@@ -8,10 +8,10 @@ using Patients.Domain.Services;
 using Patients.Domain.Services.Interfaces;
 using Patients.Infrastructure.Repositories;
 using Patients.Infrastructure.Repositories.Interfaces;
-using System.Text;
 using Serilog;
 using Serilog.Sinks.Graylog;
 using Serilog.Sinks.Graylog.Core.Transport;
+using System.Text;
 
 namespace Patients
 {
@@ -20,26 +20,73 @@ namespace Patients
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var configuration = builder.Configuration;
 
-            // Add services to the container.
-            builder.Services.AddControllers();
-            
-            // Learn more about configuring OpenAPI
+            // --- Configure Serilog ---
+            var graylogSection = configuration.GetSection("Logging:Serilog:Graylog");
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .WriteTo.Graylog(new GraylogSinkOptions
+                {
+                    HostnameOrAddress = graylogSection["HostnameOrAddress"],
+                    Port = int.Parse(graylogSection["Port"] ?? "12201"),
+                    Facility = graylogSection["Facility"],
+                    TransportType = Enum.TryParse(graylogSection["TransportType"], out TransportType transport)
+                        ? transport
+                        : TransportType.Udp,
+                    ShortMessageMaxLength = int.Parse(graylogSection["ShortMessageMaxLength"] ?? "5000")
+                })
+                .CreateLogger();
+
+            builder.Host.UseSerilog();
+
+            // --- Database ---
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+            // --- Identity ---
+            builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            // --- Authentication / JWT ---
+            var jwtSection = configuration.GetSection("JWT");
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
+                    ValidAudience = jwtSection["ValidAudience"],
+                    ValidIssuer = jwtSection["ValidIssuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Secret"] ?? ""))
+                };
+            });
+
+            // --- Swagger ---
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Patients API", Version = "v1" });
-                
-                // Configure Swagger to use JWT Authentication
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Description = "JWT Authorization header using the Bearer scheme.",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
                     Scheme = "Bearer"
                 });
-                
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
@@ -56,101 +103,25 @@ namespace Patients
                 });
             });
 
-            // Configure Logger
-            Log.Logger = new LoggerConfiguration()
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.Graylog(new GraylogSinkOptions
-                {
-                    HostnameOrAddress = "127.0.0.1",
-                    Port = 12201,
-                    TransportType = TransportType.Udp,
-                    Facility = "MyDotNetApp",
-                    ShortMessageMaxLength = 5000
-                })
-                .CreateLogger();
-
-            builder.Host.UseSerilog();
-
-            // Configure database
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-            // Configure Identity
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
-
-            // Configure Authentication
-            builder.Services.AddAuthentication(options =>
+            // --- CORS ---
+            var corsSection = configuration.GetSection("CORS");
+            builder.Services.AddCors(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters()
+                options.AddPolicy("ConfiguredCors", policy =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ClockSkew = TimeSpan.Zero,
-                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
-                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                        builder.Configuration["JWT:Secret"] ?? "DefaultSecretKeyForDevThatShouldBeChangedInProduction"))
-                };
-                
-                // Add event handlers for debugging token validation issues
-                options.Events = new JwtBearerEvents
-                {
-                    OnAuthenticationFailed = context =>
-                    {
-                        Console.WriteLine("Authentication failed: " + context.Exception.Message);
-                        return Task.CompletedTask;
-                    },
-                    OnTokenValidated = context =>
-                    {
-                        Console.WriteLine("Token validated successfully");
-                        return Task.CompletedTask;
-                    },
-                    OnChallenge = context =>
-                    {
-                        Console.WriteLine("Challenge issued: " + context.Error);
-                        return Task.CompletedTask;
-                    },
-                    OnMessageReceived = context =>
-                    {
-                        var token = context.Request.Headers["Authorization"].ToString();
-                        Console.WriteLine($"Authorization header received: {token}");
-                        return Task.CompletedTask;
-                    }
-                };
+                    policy.WithOrigins(corsSection.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "*" })
+                          .WithMethods(corsSection.GetSection("AllowedMethods").Get<string[]>() ?? new[] { "GET", "POST" })
+                          .WithHeaders(corsSection.GetSection("AllowedHeaders").Get<string[]>() ?? new[] { "*" });
+                });
             });
 
-            // Configure repositories and services
+            // --- Custom services ---
             builder.Services.AddScoped<IPatientRepository, PatientRepository>();
             builder.Services.AddScoped<IAddressRepository, AddressRepository>();
             builder.Services.AddScoped<IPatientService, PatientService>();
 
-            // Configure CORS
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAll", builder =>
-                {
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
-                });
-            });
-
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -158,24 +129,21 @@ namespace Patients
             }
 
             app.UseHttpsRedirection();
-            
-            // Enable CORS
-            app.UseCors("AllowAll");
-
+            app.UseCors("ConfiguredCors");
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.MapControllers();
 
-            // Seed default users
+            // --- Seed admin user ---
             using (var scope = app.Services.CreateScope())
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-                var adminUser = new IdentityUser { UserName = "admin", Email = "admin@example.com" };
-                
-                if (userManager.FindByNameAsync("admin").Result == null)
+                var adminConfig = configuration.GetSection("AdminUser");
+                var adminUser = new IdentityUser { UserName = adminConfig["Username"], Email = adminConfig["Email"] };
+
+                if (userManager.FindByNameAsync(adminUser.UserName).Result == null)
                 {
-                    var result = userManager.CreateAsync(adminUser, "Admin123!").Result;
+                    userManager.CreateAsync(adminUser, adminConfig["Password"] ?? "ChangeMe123!").Wait();
                 }
             }
 
