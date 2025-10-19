@@ -154,6 +154,7 @@ namespace Patients.Domain.Services
                 if (existingPatient == null)
                 {
                     _logger.LogWarning("Patient with ID {PatientId} not found for update", id);
+                    return;
                 }
 
                 existingPatient.FirstName = patientUpdateDto.FirstName;
