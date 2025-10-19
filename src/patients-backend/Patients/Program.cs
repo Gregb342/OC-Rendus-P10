@@ -22,6 +22,10 @@ namespace Patients
             var builder = WebApplication.CreateBuilder(args);
             var configuration = builder.Configuration;
 
+            // --- Add Controllers ---
+            builder.Services.AddControllers();
+            builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
             // --- Configure Serilog ---
             var graylogSection = configuration.GetSection("Logging:Serilog:Graylog");
             Log.Logger = new LoggerConfiguration()
@@ -104,16 +108,16 @@ namespace Patients
             });
 
             // --- CORS ---
-            var corsSection = configuration.GetSection("CORS");
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("ConfiguredCors", policy =>
-                {
-                    policy.WithOrigins(corsSection.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "*" })
-                          .WithMethods(corsSection.GetSection("AllowedMethods").Get<string[]>() ?? new[] { "GET", "POST" })
-                          .WithHeaders(corsSection.GetSection("AllowedHeaders").Get<string[]>() ?? new[] { "*" });
+            builder.Services.AddCors(options => 
+                { 
+                    options.AddPolicy("AllowAll", builder => 
+                    { 
+                        builder
+                        .AllowAnyOrigin() 
+                        .AllowAnyMethod() 
+                        .AllowAnyHeader(); 
+                    }); 
                 });
-            });
 
             // --- Custom services ---
             builder.Services.AddScoped<IPatientRepository, PatientRepository>();
