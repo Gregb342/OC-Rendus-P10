@@ -2,11 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Patients.Domain.Entities
 {
-    public class Patient
+    public class Patient : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
-        
         [Required]
         [MaxLength(100)]
         public string FirstName { get; set; } = string.Empty;
@@ -27,6 +24,7 @@ namespace Patients.Domain.Entities
         
         [MaxLength(20)]
         public string? PhoneNumber { get; set; }
+        
         public virtual Address? PatientAddress { get; set; }
         
         // Créé pour respecter la normalisation 3NF

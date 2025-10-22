@@ -132,12 +132,20 @@ namespace Patients.Controllers
                     throw new InvalidOperationException("JWT configuration is incomplete");
                 }
 
+                // Validation de la taille de la clé JWT
+                var keyBytes = Encoding.UTF8.GetBytes(jwtSecret);
+                if (keyBytes.Length < 32) // 256 bits minimum
+                {
+                    _logger.LogError("JWT secret key is too short. Current length: {KeyLength} bytes, minimum required: 32 bytes (256 bits)", keyBytes.Length);
+                    throw new InvalidOperationException($"JWT secret key must be at least 32 characters long (256 bits). Current length: {keyBytes.Length} bytes");
+                }
+
                 if (jwtSecret == "DefaultSecretKeyForDevThatShouldBeChangedInProduction")
                 {
                     _logger.LogWarning("Using default JWT secret key - this should be changed in production");
                 }
 
-                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+                var authSigningKey = new SymmetricSecurityKey(keyBytes);
                 var expirationTime = DateTime.Now.AddHours(3);
 
                 _logger.LogDebug("Creating JWT token with expiration time {ExpirationTime}", expirationTime);
