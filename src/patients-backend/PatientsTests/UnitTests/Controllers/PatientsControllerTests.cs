@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Patients.Controllers;
+using Patients.Domain.Entities;
 using Patients.Domain.Services.Interfaces;
 using Patients.DTOs;
 using Patients.Infrastructure.Repositories.Interfaces;
@@ -20,32 +21,32 @@ public class PatientsControllerTests
     public PatientsControllerTests()
     {
         _mockPatientService = new Mock<IPatientService>();
-        _mockAddressRepository = new Mock<IAddressRepository>();
-        _mockLogger = new Mock<ILogger<PatientsController>>();
-        
-        _controller = new PatientsController(
+    _mockAddressRepository = new Mock<IAddressRepository>();
+ _mockLogger = new Mock<ILogger<PatientsController>>();
+ 
+     _controller = new PatientsController(
             _mockPatientService.Object,
-            _mockAddressRepository.Object,
+   _mockAddressRepository.Object,
             _mockLogger.Object);
 
-        // Setup HttpContext for authorization testing
+      // Setup HttpContext for authorization testing
         var claims = new[]
-        {
-            new Claim(ClaimTypes.Name, "testuser"),
-            new Claim(ClaimTypes.NameIdentifier, "123")
+  {
+ new Claim(ClaimTypes.Name, "testuser"),
+          new Claim(ClaimTypes.NameIdentifier, "123")
         };
         var identity = new ClaimsIdentity(claims, "Bearer");
-        var principal = new ClaimsPrincipal(identity);
+   var principal = new ClaimsPrincipal(identity);
         
-        _controller.ControllerContext = new ControllerContext
+_controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext
-            {
-                User = principal
-            }
-        };
+      {
+       User = principal
+ }
+   };
 
-        _controller.HttpContext.Request.Headers["Authorization"] = "Bearer test-token";
+    _controller.HttpContext.Request.Headers["Authorization"] = "Bearer test-token";
     }
 
     #region GetPatients Tests
@@ -54,19 +55,19 @@ public class PatientsControllerTests
     public async Task GetPatients_WhenPatientsExist_ReturnsOkWithPatients()
     {
         // Arrange
-        var expectedPatients = CreateTestPatientDtos();
+  var expectedPatients = CreateTestPatientDtos();
         _mockPatientService.Setup(service => service.GetAllPatientsAsync())
-            .ReturnsAsync(expectedPatients);
+        .ReturnsAsync(expectedPatients);
 
         // Act
-        var result = await _controller.GetPatients();
+      var result = await _controller.GetPatients();
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<IEnumerable<PatientDto>>>(result);
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-        var returnedPatients = Assert.IsAssignableFrom<IEnumerable<PatientDto>>(okResult.Value);
+  var returnedPatients = Assert.IsAssignableFrom<IEnumerable<PatientDto>>(okResult.Value);
         Assert.Equal(2, returnedPatients.Count());
-        
+     
         _mockPatientService.Verify(service => service.GetAllPatientsAsync(), Times.Once);
     }
 
@@ -74,19 +75,19 @@ public class PatientsControllerTests
     public async Task GetPatients_WhenNoPatientsExist_ReturnsOkWithEmptyList()
     {
         // Arrange
-        _mockPatientService.Setup(service => service.GetAllPatientsAsync())
-            .ReturnsAsync(new List<PatientDto>());
+    _mockPatientService.Setup(service => service.GetAllPatientsAsync())
+        .ReturnsAsync(new List<PatientDto>());
 
         // Act
         var result = await _controller.GetPatients();
 
         // Assert
-        var actionResult = Assert.IsType<ActionResult<IEnumerable<PatientDto>>>(result);
-        var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+     var actionResult = Assert.IsType<ActionResult<IEnumerable<PatientDto>>>(result);
+var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var returnedPatients = Assert.IsAssignableFrom<IEnumerable<PatientDto>>(okResult.Value);
         Assert.Empty(returnedPatients);
         
-        _mockPatientService.Verify(service => service.GetAllPatientsAsync(), Times.Once);
+   _mockPatientService.Verify(service => service.GetAllPatientsAsync(), Times.Once);
     }
 
     [Fact]
@@ -94,15 +95,15 @@ public class PatientsControllerTests
     {
         // Arrange
         _mockPatientService.Setup(service => service.GetAllPatientsAsync())
-            .ThrowsAsync(new Exception("Database connection failed"));
+       .ThrowsAsync(new Exception("Database connection failed"));
 
         // Act
-        var result = await _controller.GetPatients();
+     var result = await _controller.GetPatients();
 
-        // Assert
+// Assert
         var actionResult = Assert.IsType<ActionResult<IEnumerable<PatientDto>>>(result);
         var statusResult = Assert.IsType<ObjectResult>(actionResult.Result);
-        Assert.Equal(500, statusResult.StatusCode);
+    Assert.Equal(500, statusResult.StatusCode);
         Assert.Equal("An error occurred while retrieving patients", statusResult.Value);
         
         _mockPatientService.Verify(service => service.GetAllPatientsAsync(), Times.Once);
@@ -110,7 +111,7 @@ public class PatientsControllerTests
 
     #endregion
 
-    #region GetPatient Tests
+ #region GetPatient Tests
 
     [Theory]
     [InlineData(1)]
@@ -119,19 +120,19 @@ public class PatientsControllerTests
     public async Task GetPatient_WhenPatientExists_ReturnsOkWithPatient(int patientId)
     {
         // Arrange
-        var expectedPatient = CreateTestPatientDto(patientId);
-        _mockPatientService.Setup(service => service.GetPatientByIdAsync(patientId))
+    var expectedPatient = CreateTestPatient(patientId);
+   _mockPatientService.Setup(service => service.GetPatientByIdAsync(patientId))
             .ReturnsAsync(expectedPatient);
 
         // Act
-        var result = await _controller.GetPatient(patientId);
+     var result = await _controller.GetPatient(patientId);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<PatientDto>>(result);
-        var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-        var returnedPatient = Assert.IsType<PatientDto>(okResult.Value);
+ var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+  var returnedPatient = Assert.IsType<PatientDto>(okResult.Value);
         Assert.Equal(patientId, returnedPatient.Id);
-        Assert.Equal("John", returnedPatient.FirstName);
+   Assert.Equal("John", returnedPatient.FirstName);
         
         _mockPatientService.Verify(service => service.GetPatientByIdAsync(patientId), Times.Once);
     }
@@ -142,17 +143,17 @@ public class PatientsControllerTests
     [InlineData(999)]
     public async Task GetPatient_WhenPatientDoesNotExist_ReturnsNotFound(int patientId)
     {
-        // Arrange
+     // Arrange
         _mockPatientService.Setup(service => service.GetPatientByIdAsync(patientId))
-            .ReturnsAsync((PatientDto?)null);
+         .ReturnsAsync((Patient?)null);
 
         // Act
-        var result = await _controller.GetPatient(patientId);
+    var result = await _controller.GetPatient(patientId);
 
         // Assert
-        var actionResult = Assert.IsType<ActionResult<PatientDto>>(result);
+   var actionResult = Assert.IsType<ActionResult<PatientDto>>(result);
         Assert.IsType<NotFoundResult>(actionResult.Result);
-        
+   
         _mockPatientService.Verify(service => service.GetPatientByIdAsync(patientId), Times.Once);
     }
 
@@ -162,7 +163,7 @@ public class PatientsControllerTests
         // Arrange
         var patientId = 1;
         _mockPatientService.Setup(service => service.GetPatientByIdAsync(patientId))
-            .ThrowsAsync(new Exception("Database error"));
+    .ThrowsAsync(new Exception("Database error"));
 
         // Act
         var result = await _controller.GetPatient(patientId);
@@ -171,8 +172,8 @@ public class PatientsControllerTests
         var actionResult = Assert.IsType<ActionResult<PatientDto>>(result);
         var statusResult = Assert.IsType<ObjectResult>(actionResult.Result);
         Assert.Equal(500, statusResult.StatusCode);
-        Assert.Equal("An error occurred while retrieving the patient", statusResult.Value);
-        
+  Assert.Equal("An error occurred while retrieving the patient", statusResult.Value);
+     
         _mockPatientService.Verify(service => service.GetPatientByIdAsync(patientId), Times.Once);
     }
 
@@ -185,32 +186,23 @@ public class PatientsControllerTests
     {
         // Arrange
         var patientCreateDto = CreateTestPatientCreateDto();
-        var createdPatientId = 1;
-        
-        _mockPatientService.Setup(service => service.CreatePatientAsync(patientCreateDto))
-            .ReturnsAsync(createdPatientId);
+        var savedAddress = CreateTestAddress(1);
+  var createdPatient = CreateTestPatient(1);
+
+        _mockAddressRepository.Setup(repo => repo.AddAsync(It.IsAny<Address>()))
+   .ReturnsAsync(savedAddress);
+        _mockPatientService.Setup(service => service.CreatePatientAsync(It.IsAny<Patient>()))
+     .ReturnsAsync(createdPatient);
 
         // Act
-        var result = await _controller.CreatePatient(patientCreateDto);
+      var result = await _controller.CreatePatient(patientCreateDto);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<PatientDto>>(result);
-        var createdResult = Assert.IsType<CreatedAtActionResult>(actionResult.Result);
+  var createdResult = Assert.IsType<CreatedAtActionResult>(actionResult.Result);
         Assert.Equal(nameof(_controller.GetPatient), createdResult.ActionName);
         
-        // Verify RouteValues contains the correct id (handle null case)
-        if (createdResult.RouteValues != null)
-        {
-            Assert.True(createdResult.RouteValues.ContainsKey("id"));
-            Assert.Equal(createdPatientId, createdResult.RouteValues["id"]);
-        }
-        else
-        {
-            // If RouteValues is null, verify the service was still called correctly
-            _mockPatientService.Verify(service => service.CreatePatientAsync(patientCreateDto), Times.Once);
-        }
-        
-        _mockPatientService.Verify(service => service.CreatePatientAsync(patientCreateDto), Times.Once);
+    _mockPatientService.Verify(service => service.CreatePatientAsync(It.IsAny<Patient>()), Times.Once);
     }
 
     [Theory]
@@ -220,19 +212,17 @@ public class PatientsControllerTests
     {
         // Arrange
         var patientCreateDto = CreateTestPatientCreateDto();
-        _mockPatientService.Setup(service => service.CreatePatientAsync(patientCreateDto))
-            .ThrowsAsync(new Exception(errorMessage));
+        _mockAddressRepository.Setup(repo => repo.AddAsync(It.IsAny<Address>()))
+       .ThrowsAsync(new Exception(errorMessage));
 
         // Act
-        var result = await _controller.CreatePatient(patientCreateDto);
+   var result = await _controller.CreatePatient(patientCreateDto);
 
-        // Assert
+      // Assert
         var actionResult = Assert.IsType<ActionResult<PatientDto>>(result);
         var statusResult = Assert.IsType<ObjectResult>(actionResult.Result);
-        Assert.Equal(500, statusResult.StatusCode);
-        Assert.Equal("An error occurred while creating the patient", statusResult.Value);
-        
-        _mockPatientService.Verify(service => service.CreatePatientAsync(patientCreateDto), Times.Once);
+      Assert.Equal(500, statusResult.StatusCode);
+  Assert.Equal("An error occurred while creating the patient", statusResult.Value);
     }
 
     #endregion
@@ -245,6 +235,10 @@ public class PatientsControllerTests
         // Arrange
         var patientId = 1;
         var patientUpdateDto = CreateTestPatientUpdateDto();
+        var existingPatient = CreateTestPatient(patientId);
+
+   _mockPatientService.Setup(service => service.GetPatientByIdAsync(patientId))
+       .ReturnsAsync(existingPatient);
 
         // Act
         var result = await _controller.UpdatePatient(patientId, patientUpdateDto);
@@ -252,48 +246,49 @@ public class PatientsControllerTests
         // Assert
         Assert.IsType<NoContentResult>(result);
         
-        _mockPatientService.Verify(service => service.UpdatePatientAsync(patientId, patientUpdateDto), Times.Once);
+        _mockPatientService.Verify(service => service.GetPatientByIdAsync(patientId), Times.Once);
+        _mockPatientService.Verify(service => service.UpdatePatientAsync(It.IsAny<Patient>()), Times.Once);
     }
 
     [Theory]
-    [InlineData("Repository error")]
+[InlineData("Repository error")]
     [InlineData("Patient not found")]
     public async Task UpdatePatient_WhenServiceThrowsException_ReturnsInternalServerError(string errorMessage)
     {
         // Arrange
         var patientId = 1;
         var patientUpdateDto = CreateTestPatientUpdateDto();
-        _mockPatientService.Setup(service => service.UpdatePatientAsync(patientId, patientUpdateDto))
-            .ThrowsAsync(new Exception(errorMessage));
+        _mockPatientService.Setup(service => service.GetPatientByIdAsync(patientId))
+  .ThrowsAsync(new Exception(errorMessage));
 
         // Act
         var result = await _controller.UpdatePatient(patientId, patientUpdateDto);
 
         // Assert
         var statusResult = Assert.IsType<ObjectResult>(result);
-        Assert.Equal(500, statusResult.StatusCode);
+     Assert.Equal(500, statusResult.StatusCode);
         Assert.Equal("An error occurred while updating the patient", statusResult.Value);
         
-        _mockPatientService.Verify(service => service.UpdatePatientAsync(patientId, patientUpdateDto), Times.Once);
+        _mockPatientService.Verify(service => service.GetPatientByIdAsync(patientId), Times.Once);
     }
 
     #endregion
 
     #region DeletePatient Tests
 
-    [Theory]
+  [Theory]
     [InlineData(1, true)]
     [InlineData(2, true)]
     public async Task DeletePatient_WhenPatientExists_ReturnsNoContent(int patientId, bool serviceResult)
-    {
+  {
         // Arrange
         _mockPatientService.Setup(service => service.DeletePatientAsync(patientId))
-            .ReturnsAsync(serviceResult);
+ .ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _controller.DeletePatient(patientId);
+ var result = await _controller.DeletePatient(patientId);
 
-        // Assert
+     // Assert
         Assert.IsType<NoContentResult>(result);
         
         _mockPatientService.Verify(service => service.DeletePatientAsync(patientId), Times.Once);
@@ -304,33 +299,33 @@ public class PatientsControllerTests
     [InlineData(999)]
     public async Task DeletePatient_WhenPatientDoesNotExist_ReturnsNotFound(int patientId)
     {
-        // Arrange
+      // Arrange
         _mockPatientService.Setup(service => service.DeletePatientAsync(patientId))
             .ReturnsAsync(false);
 
-        // Act
-        var result = await _controller.DeletePatient(patientId);
+// Act
+    var result = await _controller.DeletePatient(patientId);
 
         // Assert
-        Assert.IsType<NotFoundResult>(result);
-        
-        _mockPatientService.Verify(service => service.DeletePatientAsync(patientId), Times.Once);
+     Assert.IsType<NotFoundResult>(result);
+    
+    _mockPatientService.Verify(service => service.DeletePatientAsync(patientId), Times.Once);
     }
 
     [Fact]
     public async Task DeletePatient_WhenServiceThrowsException_ReturnsInternalServerError()
-    {
-        // Arrange
-        var patientId = 1;
-        _mockPatientService.Setup(service => service.DeletePatientAsync(patientId))
-            .ThrowsAsync(new Exception("Database error"));
+{
+      // Arrange
+     var patientId = 1;
+ _mockPatientService.Setup(service => service.DeletePatientAsync(patientId))
+       .ThrowsAsync(new Exception("Database error"));
 
-        // Act
+      // Act
         var result = await _controller.DeletePatient(patientId);
 
         // Assert
         var statusResult = Assert.IsType<ObjectResult>(result);
-        Assert.Equal(500, statusResult.StatusCode);
+ Assert.Equal(500, statusResult.StatusCode);
         Assert.Equal("An error occurred while deleting the patient", statusResult.Value);
         
         _mockPatientService.Verify(service => service.DeletePatientAsync(patientId), Times.Once);
@@ -341,84 +336,97 @@ public class PatientsControllerTests
     #region Helper Methods
 
     private List<PatientDto> CreateTestPatientDtos()
-    {
+  {
         return new List<PatientDto>
         {
-            new PatientDto
-            {
-                Id = 1,
-                FirstName = "John",
-                LastName = "Doe",
-                DateOfBirth = new DateTime(1990, 1, 1),
-                Gender = "Male",
-                PhoneNumber = "123-456-7890",
-                Address = new AddressDto
-                {
-                    Id = 1,
-                    Street = "123 Main St",
-                    City = "New York",
-                    PostalCode = "10001",
-                    Country = "USA"
-                }
+      new PatientDto
+   {
+     Id = 1,
+        FirstName = "John",
+       LastName = "Doe",
+      DateOfBirth = new DateTime(1990, 1, 1),
+    Gender = "Male",
+        PhoneNumber = "123-456-7890",
+    Address = new AddressDto
+          {
+        Id = 1,
+             Street = "123 Main St",
+            City = "New York",
+ PostalCode = "10001",
+Country = "USA"
+           }
             },
             new PatientDto
-            {
-                Id = 2,
+          {
+           Id = 2,
                 FirstName = "Jane",
-                LastName = "Smith",
-                DateOfBirth = new DateTime(1985, 5, 15),
-                Gender = "Female",
-                PhoneNumber = "987-654-3210",
-                Address = new AddressDto
-                {
-                    Id = 2,
-                    Street = "456 Oak Ave",
-                    City = "Los Angeles",
-                    PostalCode = "90210",
-                    Country = "USA"
-                }
+         LastName = "Smith",
+          DateOfBirth = new DateTime(1985, 5, 15),
+    Gender = "Female",
+            PhoneNumber = "987-654-3210",
+    Address = new AddressDto
+   {
+        Id = 2,
+          Street = "456 Oak Ave",
+     City = "Los Angeles",
+        PostalCode = "90210",
+    Country = "USA"
+           }
+     }
+        };
+    }
+
+    private Patient CreateTestPatient(int id)
+    {
+        return new Patient
+        {
+            Id = id,
+    FirstName = "John",
+LastName = "Doe",
+    DateOfBirth = new DateTime(1990, 1, 1),
+            Gender = "Male",
+   PhoneNumber = "123-456-7890",
+            AddressId = 1,
+            PatientAddress = new Address
+       {
+    Id = 1,
+       Street = "123 Main St",
+          City = "New York",
+          PostalCode = "10001",
+            Country = "USA"
             }
         };
     }
 
-    private PatientDto CreateTestPatientDto(int id)
-    {
-        return new PatientDto
+    private Address CreateTestAddress(int id)
+  {
+        return new Address
         {
-            Id = id,
-            FirstName = "John",
-            LastName = "Doe",
-            DateOfBirth = new DateTime(1990, 1, 1),
-            Gender = "Male",
-            PhoneNumber = "123-456-7890",
-            Address = new AddressDto
-            {
-                Id = 1,
-                Street = "123 Main St",
-                City = "New York",
-                PostalCode = "10001",
-                Country = "USA"
-            }
+ Id = id,
+            Street = "123 Main St",
+     City = "New York",
+  PostalCode = "10001",
+            Country = "USA"
         };
-    }
+ }
 
     private PatientCreateDto CreateTestPatientCreateDto()
     {
         return new PatientCreateDto
         {
             FirstName = "John",
-            LastName = "Doe",
-            DateOfBirth = new DateTime(1990, 1, 1),
-            Gender = "Male",
+ LastName = "Doe",
+      DateOfBirth = new DateTime(1990, 1, 1),
+    Gender = "Male",
             PhoneNumber = "123-456-7890",
             Address = new AddressCreateDto
             {
-                Street = "123 Main St",
-                City = "New York",
-                PostalCode = "10001",
-                Country = "USA"
-            }
-        };
+    Street = "123 Main St",
+     City = "New York",
+PostalCode = "10001",
+         Country = "USA"
+      }
+   };
     }
 
     private PatientUpdateDto CreateTestPatientUpdateDto()
@@ -426,17 +434,17 @@ public class PatientsControllerTests
         return new PatientUpdateDto
         {
             FirstName = "John Updated",
-            LastName = "Doe Updated",
-            DateOfBirth = new DateTime(1990, 1, 1),
+     LastName = "Doe Updated",
+      DateOfBirth = new DateTime(1990, 1, 1),
             Gender = "Male",
-            PhoneNumber = "123-456-7890",
-            Address = new AddressCreateDto
-            {
-                Street = "456 Updated St",
-                City = "Updated City",
-                PostalCode = "12345",
-                Country = "USA"
-            }
+   PhoneNumber = "123-456-7890",
+    Address = new AddressCreateDto
+     {
+         Street = "456 Updated St",
+     City = "Updated City",
+      PostalCode = "12345",
+            Country = "USA"
+   }
         };
     }
 

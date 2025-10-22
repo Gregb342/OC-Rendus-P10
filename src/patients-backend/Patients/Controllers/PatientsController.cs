@@ -30,22 +30,14 @@ namespace Patients.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PatientDto>>> GetPatients()
         {
-            var traceId = Guid.NewGuid();
-            using (_logger.BeginScope(new Dictionary<string, object>
+            try
             {
-                ["TraceId"] = traceId,
-                ["User"] = User?.Identity?.Name ?? "Anonymous"
-            }))
-                try
-            {
-                _logger.LogInformation("Handling GET /api/patients");
-                
+                _logger.LogInformation("GetPatients called. User: " + User?.Identity?.Name);
+
                 var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
-                _logger.LogDebug("Authorization header present: {HasAuthHeader}", !string.IsNullOrEmpty(authHeader));
+                _logger.LogInformation($"Authorization header: {authHeader ?? "None"}");
 
                 var patientDtos = await _patientService.GetAllPatientsAsync();
-                _logger.LogInformation("Retrieved {Count} patients from service", patientDtos.Count());
-
                 return Ok(patientDtos);
             }
             catch (Exception ex)
@@ -59,37 +51,38 @@ namespace Patients.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<PatientDto>> GetPatient(int id)
         {
-            var traceId = Guid.NewGuid();
-            using (_logger.BeginScope(new Dictionary<string, object>
-            {
-                ["TraceId"] = traceId,
-                ["User"] = User?.Identity?.Name ?? "Anonymous",
-                ["PatientId"] = id  
-            }))
             try
             {
-                _logger.LogInformation("Handling GET /api/patients/{PatientId}", id);
-                
-                var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
-                _logger.LogDebug("Authorization header present: {HasAuthHeader}", !string.IsNullOrEmpty(authHeader));
+                var patient = await _patientService.GetPatientByIdAsync(id);
 
-                var patientDto = await _patientService.GetPatientByIdAsync(id);
-                _logger.LogDebug("Patient service query completed for id {PatientId}", id);
-
-                if (patientDto == null)
+                if (patient == null)
                 {
-                    _logger.LogWarning("Patient with id {PatientId} not found", id);
                     return NotFound();
                 }
 
-                _logger.LogInformation("Patient with id {PatientId} retrieved successfully", id);
+                var patientDto = new PatientDto
+                {
+                    Id = patient.Id,
+                    FirstName = patient.FirstName,
+                    LastName = patient.LastName,
+                    DateOfBirth = patient.DateOfBirth,
+                    Gender = patient.Gender,
+                    PhoneNumber = patient.PhoneNumber,
+                    Address = patient.PatientAddress != null ? new AddressDto
+                    {
+                        Id = patient.PatientAddress.Id,
+                        Street = patient.PatientAddress.Street,
+                        City = patient.PatientAddress.City,
+                        PostalCode = patient.PatientAddress.PostalCode,
+                        Country = patient.PatientAddress.Country
+                    } : null
+                };
 
-                _logger.LogInformation("Returning patient DTO for id {PatientId}", id);
                 return Ok(patientDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving patient with id {PatientId}", id);
+                _logger.LogError(ex, $"Error retrieving patient with id {id}");
                 return StatusCode(500, "An error occurred while retrieving the patient");
             }
         }
@@ -98,26 +91,57 @@ namespace Patients.Controllers
         [HttpPost]
         public async Task<ActionResult<PatientDto>> CreatePatient(PatientCreateDto patientCreateDto)
         {
-            var traceId = Guid.NewGuid();
-            using (_logger.BeginScope(new Dictionary<string, object>
-            {
-                ["TraceId"] = traceId,
-                ["User"] = User?.Identity?.Name ?? "Anonymous"
-            }))
             try
             {
-                _logger.LogInformation("Handling POST /api/patients");
-                _logger.LogDebug("Creating patient: {FirstName} {LastName}, DOB: {DateOfBirth}", 
-                    patientCreateDto.FirstName, patientCreateDto.LastName, patientCreateDto.DateOfBirth);
-                
-                var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
-                _logger.LogDebug("Authorization header present: {HasAuthHeader}", !string.IsNullOrEmpty(authHeader));
-             
-                var createdPatientId = await _patientService.CreatePatientAsync(patientCreateDto);
-                _logger.LogInformation("Patient created successfully with id {PatientId}", createdPatientId);
+                // Create a new patient entity
+                var patientEntity = new Patient
+                {
+                    FirstName = patientCreateDto.FirstName,
+                    LastName = patientCreateDto.LastName,
+                    DateOfBirth = patientCreateDto.DateOfBirth,
+                    Gender = patientCreateDto.Gender,
+                    PhoneNumber = patientCreateDto.PhoneNumber
+                };
 
-                _logger.LogInformation("Returning created patient id {PatientId}", createdPatientId);
-                return CreatedAtAction(nameof(GetPatient), new { id = createdPatientId });
+                // Process address if provided
+                if (patientCreateDto.Address != null)
+                {
+                    var addressEntity = new Address
+                    {
+                        Street = patientCreateDto.Address.Street,
+                        City = patientCreateDto.Address.City,
+                        PostalCode = patientCreateDto.Address.PostalCode,
+                        Country = patientCreateDto.Address.Country
+                    };
+
+                    var savedAddress = await _addressRepository.AddAsync(addressEntity);
+                    patientEntity.AddressId = savedAddress.Id;
+                    patientEntity.PatientAddress = savedAddress;
+                }
+
+                // Save the patient
+                var createdPatient = await _patientService.CreatePatientAsync(patientEntity);
+
+                // Return the created patient
+                var patientDto = new PatientDto
+                {
+                    Id = createdPatient.Id,
+                    FirstName = createdPatient.FirstName,
+                    LastName = createdPatient.LastName,
+                    DateOfBirth = createdPatient.DateOfBirth,
+                    Gender = createdPatient.Gender,
+                    PhoneNumber = createdPatient.PhoneNumber,
+                    Address = createdPatient.PatientAddress != null ? new AddressDto
+                    {
+                        Id = createdPatient.PatientAddress.Id,
+                        Street = createdPatient.PatientAddress.Street,
+                        City = createdPatient.PatientAddress.City,
+                        PostalCode = createdPatient.PatientAddress.PostalCode,
+                        Country = createdPatient.PatientAddress.Country
+                    } : null
+                };
+
+                return CreatedAtAction(nameof(GetPatient), new { id = createdPatient.Id }, patientDto);
             }
             catch (Exception ex)
             {
@@ -130,68 +154,208 @@ namespace Patients.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePatient(int id, PatientUpdateDto patientUpdateDto)
         {
-            var traceId = Guid.NewGuid();
-            using (_logger.BeginScope(new Dictionary<string, object>
-            {
-                ["TraceId"] = traceId,
-                ["User"] = User?.Identity?.Name ?? "Anonymous",
-                ["PatientId"] = id
-            }))
             try
             {
-                _logger.LogInformation("Handling PUT /api/patients/{PatientId}", id);
-                _logger.LogDebug("Updating patient {PatientId}: {FirstName} {LastName}, DOB: {DateOfBirth}", 
-                    id, patientUpdateDto.FirstName, patientUpdateDto.LastName, patientUpdateDto.DateOfBirth);
-                
-                var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
-                _logger.LogDebug("Authorization header present: {HasAuthHeader}", !string.IsNullOrEmpty(authHeader));
+                var existingPatient = await _patientService.GetPatientByIdAsync(id);
 
-                await _patientService.UpdatePatientAsync(id, patientUpdateDto);
-                _logger.LogInformation("Patient {PatientId} updated successfully", id);
+                if (existingPatient == null)
+                {
+                    return NotFound();
+                }
+
+                // Update patient properties
+                existingPatient.FirstName = patientUpdateDto.FirstName;
+                existingPatient.LastName = patientUpdateDto.LastName;
+                existingPatient.DateOfBirth = patientUpdateDto.DateOfBirth;
+                existingPatient.Gender = patientUpdateDto.Gender;
+                existingPatient.PhoneNumber = patientUpdateDto.PhoneNumber;
+
+                // Process address if provided
+                if (patientUpdateDto.Address != null)
+                {
+                    if (existingPatient.PatientAddress != null)
+                    {
+                        // Update existing address
+                        existingPatient.PatientAddress.Street = patientUpdateDto.Address.Street;
+                        existingPatient.PatientAddress.City = patientUpdateDto.Address.City;
+                        existingPatient.PatientAddress.PostalCode = patientUpdateDto.Address.PostalCode;
+                        existingPatient.PatientAddress.Country = patientUpdateDto.Address.Country;
+                        await _addressRepository.UpdateAsync(existingPatient.PatientAddress);
+                    }
+                    else
+                    {
+                        // Create new address
+                        var newAddress = new Address
+                        {
+                            Street = patientUpdateDto.Address.Street,
+                            City = patientUpdateDto.Address.City,
+                            PostalCode = patientUpdateDto.Address.PostalCode,
+                            Country = patientUpdateDto.Address.Country
+                        };
+
+                        var savedAddress = await _addressRepository.AddAsync(newAddress);
+                        existingPatient.AddressId = savedAddress.Id;
+                        existingPatient.PatientAddress = savedAddress;
+                    }
+                }
+
+                await _patientService.UpdatePatientAsync(existingPatient);
 
                 return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating patient with id {PatientId}", id);
+                _logger.LogError(ex, $"Error updating patient with id {id}");
                 return StatusCode(500, "An error occurred while updating the patient");
             }
         }
 
-        // DELETE: api/patients/5
+        // DELETE: api/patients/5 (Soft Delete)
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePatient(int id)
         {
-            var traceId = Guid.NewGuid();
-            using (_logger.BeginScope(new Dictionary<string, object>
-            {
-                ["TraceId"] = traceId,
-                ["User"] = User?.Identity?.Name ?? "Anonymous",
-                ["PatientId"] = id
-            }))
             try
             {
-                _logger.LogInformation("Handling DELETE /api/patients/{PatientId}", id);
-                
-                var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
-                _logger.LogDebug("Authorization header present: {HasAuthHeader}", !string.IsNullOrEmpty(authHeader));
-
-                _logger.LogDebug("Attempting to delete patient with id {PatientId}", id);
                 var result = await _patientService.DeletePatientAsync(id);
 
                 if (!result)
                 {
-                    _logger.LogWarning("Patient with id {PatientId} not found for deletion", id);
                     return NotFound();
                 }
 
-                _logger.LogInformation("Patient {PatientId} deleted successfully", id);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting patient with id {PatientId}", id);
+                _logger.LogError(ex, $"Error deleting patient with id {id}");
                 return StatusCode(500, "An error occurred while deleting the patient");
+            }
+        }
+
+        // Nouveaux endpoints pour la gestion de la suppression logique
+
+        // GET: api/patients/deleted
+        [HttpGet("deleted")]
+        public async Task<ActionResult<IEnumerable<PatientDto>>> GetDeletedPatients()
+        {
+            try
+            {
+                var deletedPatients = await _patientService.GetDeletedAsync();
+                var deletedPatientDtos = deletedPatients.Select(p => new PatientDto
+                {
+                    Id = p.Id,
+                    FirstName = p.FirstName,
+                    LastName = p.LastName,
+                    DateOfBirth = p.DateOfBirth,
+                    Gender = p.Gender,
+                    PhoneNumber = p.PhoneNumber,
+                    Address = p.PatientAddress != null ? new AddressDto
+                    {
+                        Id = p.PatientAddress.Id,
+                        Street = p.PatientAddress.Street,
+                        City = p.PatientAddress.City,
+                        PostalCode = p.PatientAddress.PostalCode,
+                        Country = p.PatientAddress.Country
+                    } : null
+                }).ToList();
+
+                return Ok(deletedPatientDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving deleted patients");
+                return StatusCode(500, "An error occurred while retrieving deleted patients");
+            }
+        }
+
+        // POST: api/patients/5/restore
+        [HttpPost("{id}/restore")]
+        public async Task<IActionResult> RestorePatient(int id)
+        {
+            try
+            {
+                var result = await _patientService.RestoreAsync(id);
+
+                if (!result)
+                {
+                    return NotFound();
+                }
+
+                _logger.LogInformation("Patient with id {PatientId} restored by {User}", id, User?.Identity?.Name);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error restoring patient with id {id}");
+                return StatusCode(500, "An error occurred while restoring the patient");
+            }
+        }
+
+        // DELETE: api/patients/5/hard-delete (Permanent deletion - use with caution)
+        [HttpDelete("{id}/hard-delete")]
+        public async Task<IActionResult> HardDeletePatient(int id)
+        {
+            try
+            {
+                var result = await _patientService.HardDeleteAsync(id);
+
+                if (!result)
+                {
+                    return NotFound();
+                }
+
+                _logger.LogWarning("Patient with id {PatientId} permanently deleted by {User}", id, User?.Identity?.Name);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error permanently deleting patient with id {id}");
+                return StatusCode(500, "An error occurred while permanently deleting the patient");
+            }
+        }
+
+        // GET: api/patients/all (including deleted - for admin purposes)
+        [HttpGet("all")]
+        public async Task<ActionResult<IEnumerable<object>>> GetAllPatientsIncludingDeleted()
+        {
+            try
+            {
+                var allPatients = await _patientService.GetAllPatientsIncludingDeletedAsync();
+                var allPatientDtos = allPatients.Select(p => new
+                {
+                    p.Id,
+                    p.FirstName,
+                    p.LastName,
+                    p.DateOfBirth,
+                    p.Gender,
+                    p.PhoneNumber,
+                    Address = p.PatientAddress != null ? new AddressDto
+                    {
+                        Id = p.PatientAddress.Id,
+                        Street = p.PatientAddress.Street,
+                        City = p.PatientAddress.City,
+                        PostalCode = p.PatientAddress.PostalCode,
+                        Country = p.PatientAddress.Country
+                    } : null,
+                    // Informations d'audit
+                    AuditInfo = new
+                    {
+                        p.CreatedAt,
+                        p.CreatedBy,
+                        p.LastModifiedAt,
+                        p.LastModifiedBy,
+                        p.IsDeleted,
+                        p.DeletedAt,
+                        p.DeletedBy
+                    }
+                }).ToList();
+
+                return Ok(allPatientDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all patients including deleted");
+                return StatusCode(500, "An error occurred while retrieving all patients");
             }
         }
     }

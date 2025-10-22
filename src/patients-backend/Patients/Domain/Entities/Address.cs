@@ -2,12 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Patients.Domain.Entities
 {
-    // Création d'une entité séparée pour l'adresse (normalisation 3NF)
-    public class Address
+    public class Address : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
-        
         [MaxLength(100)]
         public string Street { get; set; } = string.Empty;
         
@@ -16,7 +12,7 @@ namespace Patients.Domain.Entities
         
         [MaxLength(20)]
         public string PostalCode { get; set; } = string.Empty;
-        
+      
         [MaxLength(100)]
         public string Country { get; set; } = string.Empty;
         

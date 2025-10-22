@@ -26,6 +26,9 @@ namespace Patients
             builder.Services.AddControllers();
             builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
+            // --- Add HttpContextAccessor for audit functionality ---
+            builder.Services.AddHttpContextAccessor();
+
             // --- Configure Serilog ---
             var graylogSection = configuration.GetSection("Logging:Serilog:Graylog");
             Log.Logger = new LoggerConfiguration()
@@ -133,7 +136,7 @@ namespace Patients
             }
 
             app.UseHttpsRedirection();
-            app.UseCors("ConfiguredCors");
+            app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();

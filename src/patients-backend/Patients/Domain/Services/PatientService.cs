@@ -1,24 +1,32 @@
+using Microsoft.EntityFrameworkCore;
+using Patients.Data;
 using Patients.Domain.Entities;
 using Patients.Domain.Services.Interfaces;
 using Patients.DTOs;
-using Patients.Infrastructure.Repositories;
+using Patients.Infrastructure.Extensions;
 using Patients.Infrastructure.Repositories.Interfaces;
 
 namespace Patients.Domain.Services
 {
-    public class PatientService : IPatientService
+    public class PatientService : IPatientService, ISoftDeleteService<Patient>
     {
         private readonly IPatientRepository _patientRepository;
         private readonly IAddressRepository _addressRepository;
+        private readonly ApplicationDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<PatientService> _logger;
 
         public PatientService(
             IPatientRepository patientRepository,
             IAddressRepository addressRepository,
+            ApplicationDbContext context,
+            IHttpContextAccessor httpContextAccessor,
             ILogger<PatientService> logger)
         {
             _patientRepository = patientRepository;
             _addressRepository = addressRepository;
+            _context = context;
+            _httpContextAccessor = httpContextAccessor;
             _logger = logger;
         }
 
@@ -26,7 +34,7 @@ namespace Patients.Domain.Services
         {
             try
             {
-                IEnumerable<Patient> patients = await _patientRepository.GetAllAsync();
+                var patients = await _patientRepository.GetAllAsync();
                 _logger.LogInformation("Retrieved {Count} patients from repository", patients.Count());
 
                 var patientsDtos = patients.Select(p => new PatientDto
@@ -37,14 +45,14 @@ namespace Patients.Domain.Services
                     DateOfBirth = p.DateOfBirth,
                     Gender = p.Gender,
                     PhoneNumber = p.PhoneNumber,
-                    Address = new AddressDto
+                    Address = p.PatientAddress != null ? new AddressDto
                     {
                         Id = p.PatientAddress.Id,
                         Street = p.PatientAddress.Street,
                         City = p.PatientAddress.City,
                         PostalCode = p.PatientAddress.PostalCode,
                         Country = p.PatientAddress.Country
-                    }
+                    } : null
                 }).ToList();
 
                 return patientsDtos;
@@ -52,15 +60,15 @@ namespace Patients.Domain.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving patients");
-                return null;
+                return new List<PatientDto>();
             }
         }
 
-        public async Task<PatientDto?> GetPatientByIdAsync(int id)
+        public async Task<Patient?> GetPatientByIdAsync(int id)
         {
             try
             {
-                Patient patient = await _patientRepository.GetByIdAsync(id);
+                var patient = await _patientRepository.GetByIdAsync(id);
                 _logger.LogInformation("Patient with id {PatientId} query to PatientRepository", id);
 
                 if (patient == null)
@@ -70,27 +78,7 @@ namespace Patients.Domain.Services
                 }
 
                 _logger.LogInformation("Patient with id {PatientId} retrieved successfully", id);
-
-                _logger.LogInformation("Returning patient DTO for id {PatientId}", id);
-                PatientDto patientDto = new PatientDto
-                {
-                    Id = patient.Id,
-                    FirstName = patient.FirstName,
-                    LastName = patient.LastName,
-                    DateOfBirth = patient.DateOfBirth,
-                    Gender = patient.Gender,
-                    PhoneNumber = patient.PhoneNumber,
-                    Address = new AddressDto
-                    {
-                        Id = patient.PatientAddress.Id,
-                        Street = patient.PatientAddress.Street,
-                        City = patient.PatientAddress.City,
-                        PostalCode = patient.PatientAddress.PostalCode,
-                        Country = patient.PatientAddress.Country
-                    }
-                };
-
-                return patientDto;
+                return patient;
             }
             catch (Exception ex)
             {
@@ -99,132 +87,164 @@ namespace Patients.Domain.Services
             }
         }
 
-        public async Task<int> CreatePatientAsync(PatientCreateDto patientCreateDto)
+        public async Task<Patient> CreatePatientAsync(Patient patient)
         {
             try
             {
-                Patient patient = new Patient
-                {
-                    FirstName = patientCreateDto.FirstName,
-                    LastName = patientCreateDto.LastName,
-                    DateOfBirth = patientCreateDto.DateOfBirth,
-                    Gender = patientCreateDto.Gender,
-                    PhoneNumber = patientCreateDto.PhoneNumber,
-                };
-
-                if (patientCreateDto.Address != null)
-                {
-                    _logger.LogDebug("Processing address for new patient: {City}, {Country}",
-                            patientCreateDto.Address.City, patientCreateDto.Address.Country);
-
-                    var addressEntity = new Address
-                    {
-                        Street = patientCreateDto.Address.Street,
-                        City = patientCreateDto.Address.City,
-                        PostalCode = patientCreateDto.Address.PostalCode,
-                        Country = patientCreateDto.Address.Country
-                    };
-
-                    var savedAddress = await _addressRepository.AddAsync(addressEntity);
-                    _logger.LogInformation("Address created with id {AddressId}", savedAddress.Id);
-
-                    patient.AddressId = savedAddress.Id;
-                    patient.PatientAddress = savedAddress;
-                }
-
                 var createdPatient = await _patientRepository.AddAsync(patient);
                 _logger.LogInformation("Patient created successfully with id {PatientId}", createdPatient.Id);
-
-                return createdPatient.Id;
+                return createdPatient;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating patient");
-                return 0;
+                throw;
             }
-
         }
 
-        public async Task UpdatePatientAsync(int id, PatientUpdateDto patientUpdateDto)
+        public async Task UpdatePatientAsync(Patient patient)
         {
             try
             {
-                Patient existingPatient = await _patientRepository.GetByIdAsync(id);
-
-                if (existingPatient == null)
-                {
-                    _logger.LogWarning("Patient with ID {PatientId} not found for update", id);
-                    return;
-                }
-
-                existingPatient.FirstName = patientUpdateDto.FirstName;
-                existingPatient.LastName = patientUpdateDto.LastName;
-                existingPatient.DateOfBirth = patientUpdateDto.DateOfBirth;
-                existingPatient.Gender = patientUpdateDto.Gender;
-                existingPatient.PhoneNumber = patientUpdateDto.PhoneNumber;
-
-                // Process address if provided
-                if (patientUpdateDto.Address != null)
-                {
-                    _logger.LogDebug("Processing address update for patient {PatientId}: {City}, {Country}",
-                        id, patientUpdateDto.Address.City, patientUpdateDto.Address.Country);
-
-                    if (existingPatient.PatientAddress != null)
-                    {
-                        // Update existing address
-                        _logger.LogDebug("Updating existing address {AddressId} for patient {PatientId}",
-                            existingPatient.PatientAddress.Id, id);
-
-                        existingPatient.PatientAddress.Street = patientUpdateDto.Address.Street;
-                        existingPatient.PatientAddress.City = patientUpdateDto.Address.City;
-                        existingPatient.PatientAddress.PostalCode = patientUpdateDto.Address.PostalCode;
-                        existingPatient.PatientAddress.Country = patientUpdateDto.Address.Country;
-                        await _addressRepository.UpdateAsync(existingPatient.PatientAddress);
-
-                        _logger.LogInformation("Address {AddressId} updated for patient {PatientId}",
-                            existingPatient.PatientAddress.Id, id);
-                    }
-                    else
-                    {
-                        // Create new address
-                        _logger.LogDebug("Creating new address for patient {PatientId}", id);
-
-                        var newAddress = new Address
-                        {
-                            Street = patientUpdateDto.Address.Street,
-                            City = patientUpdateDto.Address.City,
-                            PostalCode = patientUpdateDto.Address.PostalCode,
-                            Country = patientUpdateDto.Address.Country
-                        };
-
-                        var savedAddress = await _addressRepository.AddAsync(newAddress);
-                        _logger.LogInformation("New address {AddressId} created for patient {PatientId}",
-                            savedAddress.Id, id);
-
-                        existingPatient.AddressId = savedAddress.Id;
-                        existingPatient.PatientAddress = savedAddress;
-                    }
-                }
-
-                await _patientRepository.UpdateAsync(existingPatient);
-            } catch (Exception ex)
+                await _patientRepository.UpdateAsync(patient);
+                _logger.LogInformation("Patient with id {PatientId} updated successfully", patient.Id);
+            } 
+            catch (Exception ex)
             {
-                _logger.LogWarning(ex.ToString());
+                _logger.LogError(ex, "Error updating patient with id {PatientId}", patient.Id);
+                throw;
             }
-
         }
 
         public async Task<bool> DeletePatientAsync(int id)
         {
-            bool result = await _patientRepository.DeleteAsync(id);
-
-            if (!result)
+            try
             {
-                _logger.LogWarning("Patient with id {PatientId} not found for deletion", id);
+                var currentUser = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
+                var result = await SoftDeleteAsync(id, currentUser);
+                
+                if (result)
+                {
+                    _logger.LogInformation("Patient with id {PatientId} soft deleted by {User}", id, currentUser);
+                }
+                else
+                {
+                    _logger.LogWarning("Patient with id {PatientId} not found for deletion", id);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting patient with id {PatientId}", id);
                 return false;
             }
+        }
 
-            return true;
+        // Implémentation de ISoftDeleteService<Patient>
+        public async Task<bool> SoftDeleteAsync(int id, string deletedBy)
+        {
+            try
+            {
+                var result = await _context.Patients.SoftDeleteAsync(id, deletedBy);
+                if (result)
+                {
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Patient with id {PatientId} soft deleted by {DeletedBy}", id, deletedBy);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error soft deleting patient with id {PatientId}", id);
+                return false;
+            }
+        }
+
+        public async Task<bool> RestoreAsync(int id)
+        {
+            try
+            {
+                var result = await _context.Patients.RestoreAsync(id);
+                if (result)
+                {
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Patient with id {PatientId} restored successfully", id);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error restoring patient with id {PatientId}", id);
+                return false;
+            }
+        }
+
+        public async Task<IEnumerable<Patient>> GetDeletedAsync()
+        {
+            try
+            {
+                var deletedPatients = await _context.Patients
+                    .OnlyDeleted()
+                    .Include(p => p.PatientAddress)
+                    .ToListAsync();
+        
+                _logger.LogInformation("Retrieved {Count} deleted patients", deletedPatients.Count);
+                return deletedPatients;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving deleted patients");
+                return new List<Patient>();
+            }
+        }
+
+        public async Task<bool> HardDeleteAsync(int id)
+        {
+            try
+            {
+                // Récupérer l'entité même si elle est supprimée logiquement
+                var patient = await _context.Patients
+                    .IncludeDeleted()
+                    .FirstOrDefaultAsync(p => p.Id == id);
+                
+                if (patient == null)
+                {
+                    _logger.LogWarning("Patient with id {PatientId} not found for hard deletion", id);
+                    return false;
+                }
+
+                _context.Patients.Remove(patient);
+                await _context.SaveChangesAsync();
+            
+                _logger.LogWarning("Patient with id {PatientId} permanently deleted from database", id);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error permanently deleting patient with id {PatientId}", id);
+                return false;
+            }
+        }
+
+        // Méthodes pour récupérer les patients avec différents états
+        public async Task<IEnumerable<Patient>> GetAllPatientsIncludingDeletedAsync()
+        {
+            try
+            {
+                var allPatients = await _context.Patients
+                    .IncludeDeleted()
+                    .Include(p => p.PatientAddress)
+                    .ToListAsync();
+          
+                _logger.LogInformation("Retrieved {Count} patients including deleted ones", allPatients.Count);
+                return allPatients;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all patients including deleted");
+                return new List<Patient>();
+            }
         }
     }
 }
