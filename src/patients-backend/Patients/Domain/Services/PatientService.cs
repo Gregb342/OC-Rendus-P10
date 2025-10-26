@@ -140,8 +140,7 @@ namespace Patients.Domain.Services
                 return false;
             }
         }
-
-        // Implémentation de ISoftDeleteService<Patient>
+        
         public async Task<bool> SoftDeleteAsync(int id, string deletedBy)
         {
             try
@@ -160,91 +159,6 @@ namespace Patients.Domain.Services
                 return false;
             }
         }
-
-        public async Task<bool> RestoreAsync(int id)
-        {
-            try
-            {
-                var result = await _context.Patients.RestoreAsync(id);
-                if (result)
-                {
-                    await _context.SaveChangesAsync();
-                    _logger.LogInformation("Patient with id {PatientId} restored successfully", id);
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error restoring patient with id {PatientId}", id);
-                return false;
-            }
-        }
-
-        public async Task<IEnumerable<Patient>> GetDeletedAsync()
-        {
-            try
-            {
-                var deletedPatients = await _context.Patients
-                    .OnlyDeleted()
-                    .Include(p => p.PatientAddress)
-                    .ToListAsync();
         
-                _logger.LogInformation("Retrieved {Count} deleted patients", deletedPatients.Count);
-                return deletedPatients;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving deleted patients");
-                return new List<Patient>();
-            }
-        }
-
-        public async Task<bool> HardDeleteAsync(int id)
-        {
-            try
-            {
-                // Récupérer l'entité même si elle est supprimée logiquement
-                var patient = await _context.Patients
-                    .IncludeDeleted()
-                    .FirstOrDefaultAsync(p => p.Id == id);
-                
-                if (patient == null)
-                {
-                    _logger.LogWarning("Patient with id {PatientId} not found for hard deletion", id);
-                    return false;
-                }
-
-                _context.Patients.Remove(patient);
-                await _context.SaveChangesAsync();
-            
-                _logger.LogWarning("Patient with id {PatientId} permanently deleted from database", id);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error permanently deleting patient with id {PatientId}", id);
-                return false;
-            }
-        }
-
-        // Méthodes pour récupérer les patients avec différents états
-        public async Task<IEnumerable<Patient>> GetAllPatientsIncludingDeletedAsync()
-        {
-            try
-            {
-                var allPatients = await _context.Patients
-                    .IncludeDeleted()
-                    .Include(p => p.PatientAddress)
-                    .ToListAsync();
-          
-                _logger.LogInformation("Retrieved {Count} patients including deleted ones", allPatients.Count);
-                return allPatients;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving all patients including deleted");
-                return new List<Patient>();
-            }
-        }
     }
 }
