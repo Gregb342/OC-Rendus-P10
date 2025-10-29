@@ -1,0 +1,51 @@
+﻿@page "/"
+
+<PageTitle>Medilabo Solutions</PageTitle>
+
+<h1>Gestions des patients</h1>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Liste des patients</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Nom</th>
+                                    <th scope="col">Prénom</th>
+                                    <th scope="col">Date de naissance</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var patient in Patients)
+                                {
+                                    <tr>
+                                        <td>@patient.Nom</td>
+                                        <td>@patient.Prenom</td>
+                                        <td>@patient.DateNaissance.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <button class="btn btn-primary btn-sm me-2" @onclick="() => EditerPatient(patient.Id)">
+                                                <i class="bi bi-pencil"></i> Éditer
+                                            </button>
+                                            <button class="btn btn-info btn-sm" @onclick="() => VoirPatient(patient.Id)">
+                                                <i class="bi bi-eye"></i> Voir
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

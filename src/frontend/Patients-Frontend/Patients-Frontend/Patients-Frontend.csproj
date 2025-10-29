@@ -9,8 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Patients-Frontend.Client\Patients-Frontend.Client.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.10" />
+    <Folder Include="Components\Services\" />
   </ItemGroup>
 
 </Project>
