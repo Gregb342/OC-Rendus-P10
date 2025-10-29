@@ -1,22 +1,38 @@
-﻿@inherits LayoutComponentBase
+﻿@using Patients_Frontend.Services.Interfaces
+@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
+<AuthenticationWrapper>
+    <!-- Ce contenu ne s'affiche QUE si l'utilisateur est authentifié -->
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
         </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+        <main>
+            <div class="top-row px-4">
+                <div class="ms-auto d-flex align-items-center">
+                    <span class="me-3">Connecté</span>
+                    <button class="btn btn-outline-danger btn-sm" @onclick="HandleLogout">
+                        <i class="bi bi-box-arrow-right me-1"></i>
+                        Déconnexion
+                    </button>
+                </div>
+            </div>
 
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+</AuthenticationWrapper>
+
+<div id="blazor-error-ui">
+    <environment include="Staging,Production">
+        An error has occurred. This application may no longer respond until reloaded.
+    </environment>
+    <environment include="Development">
+        An unhandled exception has occurred. See browser dev tools for details.
+    </environment>
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
 </div>

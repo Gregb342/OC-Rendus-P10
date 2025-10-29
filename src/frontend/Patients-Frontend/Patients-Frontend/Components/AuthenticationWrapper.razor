@@ -1,0 +1,19 @@
+﻿@using Patients_Frontend.Services.Interfaces
+
+@if (IsLoading)
+{
+    <div class="d-flex justify-content-center align-items-center min-vh-100">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Chargement...</span>
+        </div>
+    </div>
+}
+else if (IsAuthenticated)
+{
+    @ChildContent
+}
+else
+{
+    <Login OnLoginSuccess="HandleLoginSuccess" />
+}
+

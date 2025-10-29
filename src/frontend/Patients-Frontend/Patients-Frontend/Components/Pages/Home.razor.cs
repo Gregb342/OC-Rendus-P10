@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using Patients_Frontend.DTOs;
 using Patients_Frontend.Services.Interfaces;
 
@@ -5,8 +6,7 @@ namespace Patients_Frontend.Components.Pages
 {
     public partial class Home
     {
-        [Inject]
-        private IPatientService PatientService { get; set; } = default!;
+        [Inject] private IPatientService PatientService { get; set; } = default!;
 
         private List<PatientDto> Patients = new();
         private bool IsLoading = true;

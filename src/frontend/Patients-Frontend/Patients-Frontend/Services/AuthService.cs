@@ -10,6 +10,9 @@ namespace Patients_Frontend.Services
         private readonly JsonSerializerOptions _jsonOptions;
         private string? _token;
 
+        // Événement pour notifier les changements d'état d'authentification
+        public event Action? AuthenticationStateChanged;
+
         public AuthService(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -36,6 +39,7 @@ namespace Patients_Frontend.Services
                     if (result.TryGetProperty("token", out var tokenElement))
                     {
                         _token = tokenElement.GetString();
+                        AuthenticationStateChanged?.Invoke();
                         return true;
                     }
                 }
@@ -51,6 +55,7 @@ namespace Patients_Frontend.Services
         public Task LogoutAsync()
         {
             _token = null;
+            AuthenticationStateChanged?.Invoke();
             return Task.CompletedTask;
         }
 
