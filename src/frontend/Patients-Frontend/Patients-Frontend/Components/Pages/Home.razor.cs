@@ -1,34 +1,92 @@
+using Patients_Frontend.DTOs;
+using Patients_Frontend.Services.Interfaces;
+
 namespace Patients_Frontend.Components.Pages
 {
     public partial class Home
     {
-        public class Patient
+        [Inject]
+        private IPatientService PatientService { get; set; } = default!;
+
+        private List<PatientDto> Patients = new();
+        private bool IsLoading = true;
+        private string? ErrorMessage;
+
+        protected override async Task OnInitializedAsync()
         {
-            public int Id { get; set; }
-            public string Nom { get; set; } = string.Empty;
-            public string Prenom { get; set; } = string.Empty;
-            public DateTime DateNaissance { get; set; }
+            await LoadPatientsAsync();
         }
 
-        private List<Patient> Patients = new()
-    {
-        new Patient { Id = 1, Nom = "Dupont", Prenom = "Jean", DateNaissance = new DateTime(1980, 5, 15) },
-        new Patient { Id = 2, Nom = "Martin", Prenom = "Marie", DateNaissance = new DateTime(1975, 8, 22) },
-        new Patient { Id = 3, Nom = "Bernard", Prenom = "Pierre", DateNaissance = new DateTime(1990, 3, 10) },
-        new Patient { Id = 4, Nom = "Dubois", Prenom = "Sophie", DateNaissance = new DateTime(1985, 12, 5) },
-        new Patient { Id = 5, Nom = "Moreau", Prenom = "Antoine", DateNaissance = new DateTime(1970, 7, 18) }
-    };
-
-        private void EditerPatient(int patientId)
+        private async Task LoadPatientsAsync()
         {
-            // Logique pour éditer le patient
-            Console.WriteLine($"Édition du patient ID: {patientId}");
+            try
+            {
+                IsLoading = true;
+                ErrorMessage = null;
+                Patients = await PatientService.GetAllPatientsAsync();
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Erreur lors du chargement des patients : {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
-        private void VoirPatient(int patientId)
+        private async Task EditerPatient(int patientId)
         {
-            // Logique pour voir les détails du patient
-            Console.WriteLine($"Affichage du patient ID: {patientId}");
+            try
+            {
+                var patient = await PatientService.GetPatientByIdAsync(patientId);
+                if (patient != null)
+                {
+                    // Logique pour naviguer vers la page d'édition
+                    Console.WriteLine($"Édition du patient: {patient.FirstName} {patient.LastName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Erreur lors de la récupération du patient : {ex.Message}";
+            }
+        }
+
+        private async Task VoirPatient(int patientId)
+        {
+            try
+            {
+                var patient = await PatientService.GetPatientByIdAsync(patientId);
+                if (patient != null)
+                {
+                    // Logique pour naviguer vers la page de détails
+                    Console.WriteLine($"Affichage du patient: {patient.FirstName} {patient.LastName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Erreur lors de la récupération du patient : {ex.Message}";
+            }
+        }
+
+        private async Task SupprimerPatient(int patientId)
+        {
+            try
+            {
+                var success = await PatientService.DeletePatientAsync(patientId);
+                if (success)
+                {
+                    await LoadPatientsAsync(); // Recharger la liste
+                }
+                else
+                {
+                    ErrorMessage = "Erreur lors de la suppression du patient";
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Erreur lors de la suppression : {ex.Message}";
+            }
         }
     }
 }
