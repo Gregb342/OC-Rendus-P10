@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Patients-Frontend/Patients-Frontend.Client/Patients-Frontend.Client.csproj" />
+  <Project Path="Patients-Frontend/Patients-Frontend/Patients-Frontend.csproj" />
+</Solution>
