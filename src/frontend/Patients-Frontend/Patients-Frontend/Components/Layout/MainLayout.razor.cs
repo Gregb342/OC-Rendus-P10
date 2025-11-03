@@ -7,11 +7,12 @@ namespace Patients_Frontend.Components.Layout
     {
         [Inject] private IAuthService AuthService { get; set; } = default!;
 
-        private async Task HandleLogout()
+        protected async Task HandleLogout()
         {
             try
             {
                 await AuthService.LogoutAsync();
+                StateHasChanged();
             }
             catch (Exception ex)
             {

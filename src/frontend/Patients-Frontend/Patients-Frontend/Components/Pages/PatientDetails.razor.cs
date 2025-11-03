@@ -4,31 +4,38 @@ using Patients_Frontend.Services.Interfaces;
 
 namespace Patients_Frontend.Components.Pages
 {
-    public partial class Home
+    public partial class PatientDetails
     {
+        [Parameter] public int Id { get; set; }
+
         [Inject] private IPatientService PatientService { get; set; } = default!;
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
-        private List<PatientDto> Patients = new();
+        private PatientDto? Patient;
         private bool IsLoading = true;
         private string? ErrorMessage;
 
         protected override async Task OnInitializedAsync()
         {
-            await LoadPatientsAsync();
+            await LoadPatientAsync();
         }
 
-        private async Task LoadPatientsAsync()
+        private async Task LoadPatientAsync()
         {
             try
             {
                 IsLoading = true;
                 ErrorMessage = null;
-                Patients = await PatientService.GetAllPatientsAsync();
+                Patient = await PatientService.GetPatientByIdAsync(Id);
+
+                if (Patient == null)
+                {
+                    ErrorMessage = "Patient non trouvé";
+                }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Erreur lors du chargement des patients : {ex.Message}";
+                ErrorMessage = $"Erreur lors du chargement du patient : {ex.Message}";
             }
             finally
             {
@@ -36,29 +43,34 @@ namespace Patients_Frontend.Components.Pages
             }
         }
 
-        private void AjouterPatient()
+        private int CalculerAge()
         {
-            NavigationManager.NavigateTo("/patients/create");
+            if (Patient == null) return 0;
+
+            var today = DateTime.Today;
+            var age = today.Year - Patient.DateOfBirth.Year;
+
+            if (Patient.DateOfBirth.Date > today.AddYears(-age))
+            {
+                age--;
+            }
+
+            return age;
         }
 
-        private void EditerPatient(int patientId)
+        private void EditerPatient()
         {
-            NavigationManager.NavigateTo($"/patients/edit/{patientId}");
+            NavigationManager.NavigateTo($"/patients/edit/{Id}");
         }
 
-        private void VoirPatient(int patientId)
-        {
-            NavigationManager.NavigateTo($"/patients/details/{patientId}");
-        }
-
-        private async Task SupprimerPatient(int patientId)
+        private async Task SupprimerPatient()
         {
             try
             {
-                var success = await PatientService.DeletePatientAsync(patientId);
+                var success = await PatientService.DeletePatientAsync(Id);
                 if (success)
                 {
-                    await LoadPatientsAsync(); // Recharger la liste
+                    NavigationManager.NavigateTo("/");
                 }
                 else
                 {
@@ -69,6 +81,11 @@ namespace Patients_Frontend.Components.Pages
             {
                 ErrorMessage = $"Erreur lors de la suppression : {ex.Message}";
             }
+        }
+
+        private void RetourListe()
+        {
+            NavigationManager.NavigateTo("/");
         }
     }
 }

@@ -41,7 +41,6 @@ namespace Patients_Frontend
             });
 
             // Enregistrement des services
-            builder.Services.AddScoped<IApiService, ApiService>();
             builder.Services.AddScoped<IPatientService, PatientService>();
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
