@@ -12,12 +12,9 @@ namespace Patients_Frontend.Components.Layout
             try
             {
                 await AuthService.LogoutAsync();
-                // Le AuthenticationWrapper va automatiquement détecter le changement
-                // et afficher la page de login
             }
             catch (Exception ex)
             {
-                // Log l'erreur ou afficher un message à l'utilisateur
                 Console.WriteLine($"Erreur lors de la déconnexion : {ex.Message}");
             }
         }

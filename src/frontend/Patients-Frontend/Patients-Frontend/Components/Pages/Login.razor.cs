@@ -1,13 +1,10 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using Patients_Frontend.DTOs;
 
 namespace Patients_Frontend.Components.Pages
 {
     public partial class Login
     {
-        [Parameter] public EventCallback OnLoginSuccess { get; set; }
-
         [SupplyParameterFromForm]
         private LoginDto loginModel { get; set; } = new();
 
@@ -16,16 +13,16 @@ namespace Patients_Frontend.Components.Pages
 
         private async Task HandleLogin()
         {
+            IsLogging = true;
+            ErrorMessage = null;
+
             try
             {
-                IsLogging = true;
-                ErrorMessage = null;
-
                 var success = await AuthService.LoginAsync(loginModel);
 
                 if (success)
                 {
-                    await OnLoginSuccess.InvokeAsync();
+                    StateHasChanged();
                 }
                 else
                 {

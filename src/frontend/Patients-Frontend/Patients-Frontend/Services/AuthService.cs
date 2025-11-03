@@ -1,6 +1,7 @@
-﻿using System.Text.Json;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using Patients_Frontend.DTOs;
 using Patients_Frontend.Services.Interfaces;
+using System.Text.Json;
 
 namespace Patients_Frontend.Services
 {
@@ -8,18 +9,15 @@ namespace Patients_Frontend.Services
     {
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
-        private string? _token;
+        private readonly CustomAuthStateProvider _authStateProvider;
 
-        // Événement pour notifier les changements d'état d'authentification
         public event Action? AuthenticationStateChanged;
 
-        public AuthService(HttpClient httpClient)
+        public AuthService(HttpClient httpClient, AuthenticationStateProvider authStateProvider)
         {
             _httpClient = httpClient;
-            _jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
+            _jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            _authStateProvider = (CustomAuthStateProvider)authStateProvider;
         }
 
         public async Task<bool> LoginAsync(LoginDto loginDto)
@@ -29,44 +27,63 @@ namespace Patients_Frontend.Services
                 var json = JsonSerializer.Serialize(loginDto, _jsonOptions);
                 var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
+                Console.WriteLine($"Tentative de login avec: {loginDto.Username}");
+
+                // Appel vers votre API Gateway
                 var response = await _httpClient.PostAsync("/auth/login", content);
 
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    var responseJson = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<JsonElement>(responseJson);
-
-                    if (result.TryGetProperty("token", out var tokenElement))
-                    {
-                        _token = tokenElement.GetString();
-                        AuthenticationStateChanged?.Invoke();
-                        return true;
-                    }
+                    Console.WriteLine($"Erreur HTTP: {response.StatusCode}");
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Erreur détaillée: {errorContent}");
+                    return false;
                 }
 
-                return false;
+                var responseJson = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Réponse de l'API: {responseJson}");
+
+                var result = JsonSerializer.Deserialize<JsonElement>(responseJson);
+
+                if (result.TryGetProperty("token", out var tokenElement))
+                {
+                    var token = tokenElement.GetString();
+                    if (string.IsNullOrEmpty(token))
+                        return false;
+
+                    await _authStateProvider.MarkUserAsAuthenticated(token);
+                    AuthenticationStateChanged?.Invoke();
+                    return true;
+                }
+
+                // Si pas de token mais réponse 200, considérer comme authentifié
+                // et créer un token simple pour l'état local
+                await _authStateProvider.MarkUserAsAuthenticated("authenticated");
+                AuthenticationStateChanged?.Invoke();
+                return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Erreur lors du login : {ex.Message}");
                 return false;
             }
         }
 
-        public Task LogoutAsync()
+        public async Task LogoutAsync()
         {
-            _token = null;
+            await _authStateProvider.MarkUserAsLoggedOut();
             AuthenticationStateChanged?.Invoke();
-            return Task.CompletedTask;
         }
 
-        public Task<bool> IsAuthenticatedAsync()
+        public async Task<bool> IsAuthenticatedAsync()
         {
-            return Task.FromResult(!string.IsNullOrEmpty(_token));
+            var authState = await _authStateProvider.GetAuthenticationStateAsync();
+            return authState.User.Identity?.IsAuthenticated ?? false;
         }
 
-        public Task<string?> GetTokenAsync()
+        public async Task<string?> GetTokenAsync()
         {
-            return Task.FromResult(_token);
+            return await _authStateProvider.GetTokenAsync();
         }
     }
 }

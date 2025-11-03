@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Components.Authorization;
 using Patients_Frontend.Components;
 using Patients_Frontend.Services;
 using Patients_Frontend.Services.Interfaces;
@@ -15,11 +14,25 @@ namespace Patients_Frontend
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
-            builder.Services.AddAuthorizationCore();
+            // Récupération directe de l'URL de l'API depuis la configuration
+            var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"];
 
-            builder.Services.AddHttpContextAccessor();
+            if (string.IsNullOrEmpty(apiBaseUrl))
+            {
+                throw new InvalidOperationException("ApiBaseUrl n'est pas configurée dans appsettings.json");
+            }
 
-            // Ajouter les services de session
+            // Configuration HttpClient avec URL de base depuis la configuration
+            builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+            {
+                client.BaseAddress = new Uri(apiBaseUrl);
+            });
+
+            builder.Services.AddHttpClient<IApiService, ApiService>(client =>
+            {
+                client.BaseAddress = new Uri(apiBaseUrl);
+            });
+
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
@@ -28,22 +41,8 @@ namespace Patients_Frontend
                 options.Cookie.IsEssential = true;
             });
 
-            // Configuration HttpClient pour AuthService
-            builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
-            {
-                client.BaseAddress = new Uri("https://localhost:7109");
-            });
-
-            // Configuration HttpClient pour ApiService
-            builder.Services.AddHttpClient<IApiService, ApiService>(client =>
-            {
-                client.BaseAddress = new Uri("https://localhost:7109");
-            });
-
-            // Enregistrement des services
-            builder.Services.AddScoped<IApiService, ApiService>();
+            // Enregistrement des autres services
             builder.Services.AddScoped<IPatientService, PatientService>();
-            builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
             var app = builder.Build();
 

@@ -9,7 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Components\Services\" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
   </ItemGroup>
 
 </Project>
