@@ -1,0 +1,129 @@
+@page "/patients/create"
+@rendermode InteractiveServer
+@* @using Microsoft.AspNetCore.Authorization
+@attribute [Authorize] *@
+
+<PageTitle>Nouveau patient</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Nouveau patient</h3>
+                    <button class="btn btn-secondary" @onclick="Annuler">
+                        <i class="bi bi-x"></i> Annuler
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (ErrorMessage != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @ErrorMessage
+                        </div>
+                    }
+
+                    <EditForm Model="@NewPatient" OnValidSubmit="@HandleValidSubmit" FormName="CreatePatientForm">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Informations personnelles</h5>
+
+                                <div class="mb-3">
+                                    <label for="firstName" class="form-label">Nom <span class="text-danger">*</span></label>
+                                    <InputText id="firstName" class="form-control" @bind-Value="NewPatient.FirstName" />
+                                    <ValidationMessage For="@(() => NewPatient.FirstName)" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="lastName" class="form-label">Prénom <span class="text-danger">*</span></label>
+                                    <InputText id="lastName" class="form-control" @bind-Value="NewPatient.LastName" />
+                                    <ValidationMessage For="@(() => NewPatient.LastName)" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="dateOfBirth" class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                                    <InputDate id="dateOfBirth" class="form-control" @bind-Value="NewPatient.DateOfBirth" />
+                                    <ValidationMessage For="@(() => NewPatient.DateOfBirth)" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="gender" class="form-label">Sexe <span class="text-danger">*</span></label>
+                                    <InputSelect id="gender" class="form-select" @bind-Value="NewPatient.Gender">
+                                        <option value="">-- Sélectionner --</option>
+                                        <option value="M">Masculin</option>
+                                        <option value="F">Féminin</option>
+                                        <option value="Autre">Autre</option>
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => NewPatient.Gender)" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="phoneNumber" class="form-label">Téléphone</label>
+                                    <InputText id="phoneNumber" class="form-control" @bind-Value="NewPatient.PhoneNumber" />
+                                    <ValidationMessage For="@(() => NewPatient.PhoneNumber)" />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Adresse</h5>
+
+                                @if (NewPatient.Address == null)
+                                {
+                                    <button type="button" class="btn btn-outline-primary mb-3" @onclick="AjouterAdresse">
+                                        <i class="bi bi-plus"></i> Ajouter une adresse
+                                    </button>
+                                }
+                                else
+                                {
+                                    <div class="mb-3">
+                                        <label for="street" class="form-label">Rue</label>
+                                        <InputText id="street" class="form-control" @bind-Value="NewPatient.Address.Street" />
+                                        <ValidationMessage For="@(() => NewPatient.Address.Street)" />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="city" class="form-label">Ville</label>
+                                        <InputText id="city" class="form-control" @bind-Value="NewPatient.Address.City" />
+                                        <ValidationMessage For="@(() => NewPatient.Address.City)" />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="postalCode" class="form-label">Code postal</label>
+                                        <InputText id="postalCode" class="form-control" @bind-Value="NewPatient.Address.PostalCode" />
+                                        <ValidationMessage For="@(() => NewPatient.Address.PostalCode)" />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="country" class="form-label">Pays</label>
+                                        <InputText id="country" class="form-control" @bind-Value="NewPatient.Address.Country" />
+                                        <ValidationMessage For="@(() => NewPatient.Address.Country)" />
+                                    </div>
+
+                                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick="SupprimerAdresse">
+                                        <i class="bi bi-trash"></i> Supprimer l'adresse
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success me-2" disabled="@IsSaving">
+                                @if (IsSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                }
+                                <i class="bi bi-plus-circle"></i> Créer le patient
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="Annuler">
+                                <i class="bi bi-x"></i> Annuler
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
