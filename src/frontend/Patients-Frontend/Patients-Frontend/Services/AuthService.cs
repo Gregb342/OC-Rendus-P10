@@ -62,9 +62,14 @@ namespace Patients_Frontend.Services
                 AuthenticationStateChanged?.Invoke();
                 return true;
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Erreur lors du login : {ex.Message}");
+                Console.WriteLine($"Erreur HTTP lors du login : {ex.Message}");
+                return false;
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Erreur de sérialisation JSON lors du login : {ex.Message}");
                 return false;
             }
         }
