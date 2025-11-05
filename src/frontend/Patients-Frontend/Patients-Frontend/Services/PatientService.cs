@@ -29,10 +29,10 @@ namespace Patients_Frontend.Services
             return result ?? throw new InvalidOperationException("Erreur lors de la création du patient");
         }
 
-        public async Task<PatientDto> UpdatePatientAsync(int id, PatientUpdateDto patientUpdateDto)
+        public async Task<bool> UpdatePatientAsync(int id, PatientUpdateDto patientUpdateDto)
         {
             var result = await _apiService.PutAsync<PatientDto>($"/patients/{id}", patientUpdateDto);
-            return result ?? throw new InvalidOperationException("Erreur lors de la mise à jour du patient");
+            return true;
         }
 
         public async Task<bool> DeletePatientAsync(int id)

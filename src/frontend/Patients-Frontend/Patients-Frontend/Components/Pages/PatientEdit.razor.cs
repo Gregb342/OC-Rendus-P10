@@ -11,15 +11,19 @@ namespace Patients_Frontend.Components.Pages
         [Inject] private IPatientService PatientService { get; set; } = default!;
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
-        private PatientUpdateDto? PatientUpdate;
+        private PatientUpdateDto? PatientUpdate = new();
+
         private bool IsLoading = true;
         private bool IsSaving = false;
         private string? ErrorMessage;
 
         protected override async Task OnInitializedAsync()
         {
+            Console.WriteLine("OnInitializedAsync START");
             await LoadPatientAsync();
+            Console.WriteLine($"PatientUpdate chargé : {PatientUpdate?.FirstName}");
         }
+
 
         private async Task LoadPatientAsync()
         {
@@ -36,22 +40,21 @@ namespace Patients_Frontend.Components.Pages
                     return;
                 }
 
-                // Convertir PatientDto en PatientUpdateDto
-                PatientUpdate = new PatientUpdateDto
+                PatientUpdate.FirstName = patient.FirstName;
+                PatientUpdate.LastName = patient.LastName;
+                PatientUpdate.DateOfBirth = patient.DateOfBirth;
+                PatientUpdate.Gender = patient.Gender;
+                PatientUpdate.PhoneNumber = patient.PhoneNumber;
+
+                if (patient.Address != null)
                 {
-                    FirstName = patient.FirstName,
-                    LastName = patient.LastName,
-                    DateOfBirth = patient.DateOfBirth,
-                    Gender = patient.Gender,
-                    PhoneNumber = patient.PhoneNumber,
-                    Address = patient.Address != null ? new AddressCreateDto
-                    {
-                        Street = patient.Address.Street,
-                        City = patient.Address.City,
-                        PostalCode = patient.Address.PostalCode,
-                        Country = patient.Address.Country
-                    } : null
-                };
+                    PatientUpdate.Address ??= new AddressCreateDto();
+                    PatientUpdate.Address.Street = patient.Address.Street;
+                    PatientUpdate.Address.City = patient.Address.City;
+                    PatientUpdate.Address.PostalCode = patient.Address.PostalCode;
+                    PatientUpdate.Address.Country = patient.Address.Country;
+                }
+
             }
             catch (Exception ex)
             {
@@ -66,7 +69,7 @@ namespace Patients_Frontend.Components.Pages
         private async Task HandleValidSubmit()
         {
             if (PatientUpdate == null) return;
-
+            Console.WriteLine($"HandleValidSubmit : {PatientUpdate?.FirstName}");
             try
             {
                 IsSaving = true;
