@@ -21,49 +21,49 @@ public class PatientServiceTests
 
     public PatientServiceTests()
     {
-     _mockPatientRepository = new Mock<IPatientRepository>();
+        _mockPatientRepository = new Mock<IPatientRepository>();
         _mockAddressRepository = new Mock<IAddressRepository>();
-  _mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+        _mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
         _mockLogger = new Mock<ILogger<PatientService>>();
-        
+
         // Create DbContextOptions for the mock context
-     var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-   .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
- .Options;
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+      .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+    .Options;
         _mockContext = new Mock<ApplicationDbContext>(options, _mockHttpContextAccessor.Object);
-        
+
         _patientService = new PatientService(
          _mockPatientRepository.Object,
   _mockAddressRepository.Object,
 _mockContext.Object,
     _mockHttpContextAccessor.Object,
             _mockLogger.Object);
-}
+    }
 
     #region GetAllPatientsAsync Tests
 
     [Fact]
-  public async Task GetAllPatientsAsync_WhenPatientsExist_ReturnsPatientDtos()
+    public async Task GetAllPatientsAsync_WhenPatientsExist_ReturnsPatientDtos()
     {
         // Arrange
         var expectedPatients = CreateTestPatients();
-      _mockPatientRepository.Setup(repo => repo.GetAllAsync())
-            .ReturnsAsync(expectedPatients);
+        _mockPatientRepository.Setup(repo => repo.GetAllAsync())
+              .ReturnsAsync(expectedPatients);
 
-    // Act
+        // Act
         var result = await _patientService.GetAllPatientsAsync();
 
         // Assert
         Assert.NotNull(result);
-     Assert.Equal(2, result.Count());
-        
-      var patientsList = result.ToList();
+        Assert.Equal(2, result.Count());
+
+        var patientsList = result.ToList();
         Assert.Equal("John", patientsList[0].FirstName);
         Assert.Equal("Doe", patientsList[0].LastName);
         Assert.Equal("Jane", patientsList[1].FirstName);
         Assert.Equal("Smith", patientsList[1].LastName);
-     
-  _mockPatientRepository.Verify(repo => repo.GetAllAsync(), Times.Once);
+
+        _mockPatientRepository.Verify(repo => repo.GetAllAsync(), Times.Once);
     }
 
     [Fact]
@@ -73,27 +73,27 @@ _mockContext.Object,
         _mockPatientRepository.Setup(repo => repo.GetAllAsync())
      .ThrowsAsync(new Exception("Database error"));
 
-  // Act
+        // Act
         var result = await _patientService.GetAllPatientsAsync();
 
         // Assert
-      Assert.NotNull(result);
- Assert.Empty(result);
-    _mockPatientRepository.Verify(repo => repo.GetAllAsync(), Times.Once);
+        Assert.NotNull(result);
+        Assert.Empty(result);
+        _mockPatientRepository.Verify(repo => repo.GetAllAsync(), Times.Once);
     }
 
     [Fact]
     public async Task GetAllPatientsAsync_WhenNoPatientsExist_ReturnsEmptyList()
     {
-   // Arrange
+        // Arrange
         _mockPatientRepository.Setup(repo => repo.GetAllAsync())
  .ReturnsAsync(new List<Patient>());
 
- // Act
+        // Act
         var result = await _patientService.GetAllPatientsAsync();
 
-    // Assert
-Assert.NotNull(result);
+        // Assert
+        Assert.NotNull(result);
         Assert.Empty(result);
         _mockPatientRepository.Verify(repo => repo.GetAllAsync(), Times.Once);
     }
@@ -109,7 +109,7 @@ Assert.NotNull(result);
     public async Task GetPatientByIdAsync_WhenPatientExists_ReturnsPatient(int patientId)
     {
         // Arrange
-   var expectedPatient = CreateTestPatient(patientId);
+        var expectedPatient = CreateTestPatient(patientId);
         _mockPatientRepository.Setup(repo => repo.GetByIdAsync(patientId))
         .ReturnsAsync(expectedPatient);
 
@@ -123,8 +123,8 @@ Assert.NotNull(result);
         Assert.Equal("Doe", result.LastName);
         Assert.NotNull(result.PatientAddress);
         Assert.Equal("123 Main St", result.PatientAddress.Street);
-        
-   _mockPatientRepository.Verify(repo => repo.GetByIdAsync(patientId), Times.Once);
+
+        _mockPatientRepository.Verify(repo => repo.GetByIdAsync(patientId), Times.Once);
     }
 
     [Theory]
@@ -148,12 +148,12 @@ Assert.NotNull(result);
     [Fact]
     public async Task GetPatientByIdAsync_WhenRepositoryThrowsException_ReturnsNull()
     {
-    // Arrange
+        // Arrange
         var patientId = 1;
-      _mockPatientRepository.Setup(repo => repo.GetByIdAsync(patientId))
-       .ThrowsAsync(new Exception("Database error"));
+        _mockPatientRepository.Setup(repo => repo.GetByIdAsync(patientId))
+         .ThrowsAsync(new Exception("Database error"));
 
-     // Act
+        // Act
         var result = await _patientService.GetPatientByIdAsync(patientId);
 
         // Assert
@@ -165,7 +165,7 @@ Assert.NotNull(result);
 
     #region CreatePatientAsync Tests
 
-  [Fact]
+    [Fact]
     public async Task CreatePatientAsync_WhenValidPatient_ReturnsCreatedPatient()
     {
         // Arrange
@@ -178,11 +178,11 @@ Assert.NotNull(result);
         // Act
         var result = await _patientService.CreatePatientAsync(patientEntity);
 
-   // Assert
+        // Assert
         Assert.NotNull(result);
         Assert.Equal(1, result.Id);
-        
-   _mockPatientRepository.Verify(repo => repo.AddAsync(It.IsAny<Patient>()), Times.Once);
+
+        _mockPatientRepository.Verify(repo => repo.AddAsync(It.IsAny<Patient>()), Times.Once);
     }
 
     [Fact]
@@ -202,7 +202,7 @@ Assert.NotNull(result);
     #region UpdatePatientAsync Tests
 
     [Fact]
-public async Task UpdatePatientAsync_WhenPatientExists_UpdatesPatient()
+    public async Task UpdatePatientAsync_WhenPatientExists_UpdatesPatient()
     {
         // Arrange
         var patient = CreateTestPatient(1);
@@ -211,10 +211,10 @@ public async Task UpdatePatientAsync_WhenPatientExists_UpdatesPatient()
         await _patientService.UpdatePatientAsync(patient);
 
         // Assert
-   _mockPatientRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Patient>()), Times.Once);
+        _mockPatientRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Patient>()), Times.Once);
     }
 
-  [Fact]
+    [Fact]
     public async Task UpdatePatientAsync_WhenRepositoryThrowsException_ThrowsException()
     {
         // Arrange
@@ -235,15 +235,15 @@ public async Task UpdatePatientAsync_WhenPatientExists_UpdatesPatient()
     [InlineData(2, true)]
     [InlineData(999, false)]
     public async Task DeletePatientAsync_WhenCalled_ReturnsSoftDeleteResult(int patientId, bool expectedResult)
-  {
-  // Arrange
+    {
+        // Arrange
         // Mock HttpContext for the current user
-  var mockHttpContext = new Mock<HttpContext>();
+        var mockHttpContext = new Mock<HttpContext>();
         var mockIdentity = new Mock<System.Security.Principal.IIdentity>();
         mockIdentity.Setup(i => i.Name).Returns("TestUser");
         var mockPrincipal = new Mock<System.Security.Claims.ClaimsPrincipal>();
         mockPrincipal.Setup(p => p.Identity).Returns(mockIdentity.Object);
-   mockHttpContext.Setup(c => c.User).Returns(mockPrincipal.Object);
+        mockHttpContext.Setup(c => c.User).Returns(mockPrincipal.Object);
         _mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(mockHttpContext.Object);
 
         // For simplification, we'll return the expected result
@@ -254,9 +254,9 @@ public async Task UpdatePatientAsync_WhenPatientExists_UpdatesPatient()
         // Act
         var result = await _patientService.DeletePatientAsync(patientId);
 
-      // Assert - Since we changed the implementation to soft delete, 
+        // Assert - Since we changed the implementation to soft delete, 
         // we expect false for non-existent patients (this test needs actual DbContext setup for full testing)
-    Assert.IsType<bool>(result);
+        Assert.IsType<bool>(result);
     }
 
     #endregion
@@ -265,7 +265,7 @@ public async Task UpdatePatientAsync_WhenPatientExists_UpdatesPatient()
 
     private List<Patient> CreateTestPatients()
     {
-  return new List<Patient>
+        return new List<Patient>
  {
        new Patient
         {
@@ -308,35 +308,35 @@ PostalCode = "90210",
 
     private Patient CreateTestPatient(int id)
     {
- return new Patient
+        return new Patient
         {
             Id = id,
             FirstName = "John",
-          LastName = "Doe",
-   DateOfBirth = new DateTime(1990, 1, 1),
-     Gender = "Male",
-        PhoneNumber = "123-456-7890",
+            LastName = "Doe",
+            DateOfBirth = new DateTime(1990, 1, 1),
+            Gender = "Male",
+            PhoneNumber = "123-456-7890",
             AddressId = 1,
             PatientAddress = new Address
-          {
-    Id = 1,
-     Street = "123 Main St",
-             City = "New York",
-   PostalCode = "10001",
-     Country = "USA"
+            {
+                Id = 1,
+                Street = "123 Main St",
+                City = "New York",
+                PostalCode = "10001",
+                Country = "USA"
             }
         };
     }
 
-  private Address CreateTestAddress(int id)
+    private Address CreateTestAddress(int id)
     {
-    return new Address
+        return new Address
         {
-    Id = id,
+            Id = id,
             Street = "123 Main St",
             City = "New York",
-    PostalCode = "10001",
-          Country = "USA"
+            PostalCode = "10001",
+            Country = "USA"
         };
     }
 

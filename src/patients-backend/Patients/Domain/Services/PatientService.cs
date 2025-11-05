@@ -145,7 +145,7 @@ namespace Patients.Domain.Services
         {
             try
             {
-                var result = await _context.Patients.SoftDeleteAsync(id, deletedBy);
+                var result = await _patientRepository.SoftDeleteAsync(id, deletedBy);
                 if (result)
                 {
                     await _context.SaveChangesAsync();
