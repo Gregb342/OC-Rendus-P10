@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Patients.Data;
 using Patients.Domain.Entities;
+using Patients.Infrastructure.Extensions;
 using Patients.Infrastructure.Repositories.Interfaces;
 
 namespace Patients.Infrastructure.Repositories
@@ -50,6 +51,14 @@ namespace Patients.Infrastructure.Repositories
             _context.Patients.Remove(patient);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        /// <summary>
+        /// Effectue une suppression logique sur le patient
+        /// </summary>
+        public async Task<bool> SoftDeleteAsync(int id, string deletedBy)
+        {
+            return await _context.Patients.SoftDeleteEntityAsync(id, deletedBy);
         }
 
         public async Task<bool> PatientExistsAsync(int id)

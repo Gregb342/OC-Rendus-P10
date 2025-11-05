@@ -9,6 +9,7 @@ namespace Patients.Infrastructure.Repositories.Interfaces
         Task<Patient> AddAsync(Patient patient);
         Task UpdateAsync(Patient patient);
         Task<bool> DeleteAsync(int id);
+        Task<bool> SoftDeleteAsync(int id, string deletedBy);
         Task<bool> PatientExistsAsync(int id);
     }
 }
