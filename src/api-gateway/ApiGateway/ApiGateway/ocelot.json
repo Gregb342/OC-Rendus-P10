@@ -5,8 +5,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5082
+          "Host": "patients-backend",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/patients",
@@ -20,8 +20,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5082
+          "Host": "patients-backend",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/patients/{id}",
@@ -32,6 +32,6 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:7109"
+    "BaseUrl": "http://api-gateway:8080"
   }
 }

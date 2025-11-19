@@ -129,6 +129,24 @@ namespace Patients
 
             var app = builder.Build();
 
+            // --- Création et migration automatique de la base de données ---
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                try
+                {
+                    // Crée la base de données si elle n'existe pas
+                    dbContext.Database.EnsureCreated();
+                    // Applique les migrations en attente
+                    dbContext.Database.Migrate();
+                    Log.Information("Base de données créée et migrations appliquées avec succès");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Erreur lors de la création/migration de la base de données");
+                }
+            }
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
