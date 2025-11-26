@@ -66,9 +66,9 @@ Tous les services doivent être à l'état "Up".
 
 Une fois les conteneurs lancés :
 
-- **Frontend (Application web)** : http://localhost:80
-- **API Gateway** : http://localhost:5000
-- **Patients API** : http://localhost:5001 (via le gateway)
+- **Frontend (Application web)** : http://localhost:5000
+- **API Gateway** : http://localhost:7000
+- **Patients API** : http://localhost:5082 (via le gateway)
 - **Graylog (Logs)** : http://localhost:9000
   - Login par défaut : `admin` / `admin`
 
