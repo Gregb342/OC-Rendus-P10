@@ -48,7 +48,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__AuthConnection=Server=sqlserver;Database=AuthDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+      - ConnectionStrings__AuthConnection=Server=sqlserver;Database=AuthDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
     ports:
       - "7000:8080"
     depends_on:
