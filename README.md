@@ -14,13 +14,13 @@ La solution est composée de plusieurs services dockerisés :
 - **API Gateway** : Passerelle Ocelot pour router les requêtes vers les microservices
 - **Patients Backend** : API REST (.NET) gérant les opérations CRUD sur les patients
 - **Graylog** : Stack de centralisation des logs (Graylog + MongoDB + OpenSearch)
-- **PostgreSQL** : Base de données relationnelle pour les patients
+- **SQL Server** : Base de données relationnelle pour les patients
 
 ### Stack technique
 
 - **.NET 8.0** (ASP.NET Core, Blazor Server)
 - **Ocelot** (API Gateway)
-- **PostgreSQL** (Base de données)
+- **SQL Server** (Base de données)
 - **Entity Framework Core** (ORM)
 - **Graylog** (Centralisation des logs)
 - **Docker & Docker Compose** (Conteneurisation)
@@ -29,7 +29,7 @@ La solution est composée de plusieurs services dockerisés :
 
 - Docker Desktop installé et en cours d'exécution
 - Docker Compose
-- Port 80, 5000, 5432, 9000, 1514, 12201, 27017 disponibles
+- Port 80, 5000, 1433, 9000, 1514, 12201, 27017 disponibles
 
 ## 🚀 Installation et lancement
 
@@ -51,7 +51,7 @@ docker-compose up -d
 
 Cette commande va :
 - Créer et démarrer tous les conteneurs
-- Initialiser les bases de données PostgreSQL
+- Initialiser les bases de données SQL Server
 - Configurer le réseau entre les services
 
 ### 3. Vérifier que les services sont actifs
@@ -115,7 +115,7 @@ dotnet test
 
 ### Structure
 
-Le service Patients utilise PostgreSQL avec les entités principales :
+Le service Patients utilise SQL Server avec les entités principales :
 - **Patient** : Informations personnelles (nom, prénom, date de naissance, genre, téléphone, email)
 - **Address** : Adresse du patient (rue, ville, code postal)
 
