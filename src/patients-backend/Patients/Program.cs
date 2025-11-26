@@ -135,9 +135,6 @@ namespace Patients
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 try
                 {
-                    // Crée la base de données si elle n'existe pas
-                    dbContext.Database.EnsureCreated();
-                    // Applique les migrations en attente
                     dbContext.Database.Migrate();
                     Log.Information("Base de données créée et migrations appliquées avec succès");
                 }
