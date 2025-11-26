@@ -64,16 +64,24 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// --- Cr�ation automatique de la base de donn�es et seed admin ---
+// --- Création automatique de la base de données et seed admin ---
 using (var scope = app.Services.CreateScope())
 {
     var authDbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-    // Cr�er la base de donn�es si elle n'existe pas
-    authDbContext.Database.EnsureCreated();
+    try
+    {
+        // Appliquer les migrations (crée la base si elle n'existe pas)
+        authDbContext.Database.Migrate();
+        Console.WriteLine("Base de données AuthDb créée et migrations appliquées avec succès");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erreur lors de la création/migration de la base de données: {ex.Message}");
+    }
 
-    // Cr�er l'utilisateur admin par d�faut
+    // Créer l'utilisateur admin par défaut
     var adminUser = await userManager.FindByNameAsync("admin");
     if (adminUser == null)
     {

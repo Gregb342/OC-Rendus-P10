@@ -31,13 +31,15 @@ namespace Patients_Frontend
             // Configuration HttpClient pour AuthService
             builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
             {
-                client.BaseAddress = new Uri("https://localhost:7109");
+                var apiUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7109";
+                client.BaseAddress = new Uri(apiUrl);
             });
 
             // Configuration HttpClient pour ApiService
             builder.Services.AddHttpClient<IApiService, ApiService>(client =>
             {
-                client.BaseAddress = new Uri("https://localhost:7109");
+                var apiUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7109";
+                client.BaseAddress = new Uri(apiUrl);
             });
 
             // Enregistrement des services

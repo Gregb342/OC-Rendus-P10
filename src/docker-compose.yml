@@ -1,0 +1,80 @@
+services:
+  # Base de données SQL Server
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Password123
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "YourStrong@Password123", "-Q", "SELECT 1", "-C"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Patients
+  patients-backend:
+    build:
+      context: ./patients-backend/Patients
+      dockerfile: Dockerfile
+    container_name: patients-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=PatientsDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+    ports:
+      - "5082:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway/ApiGateway/ApiGateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__AuthConnection=Server=sqlserver;Database=AuthDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+    ports:
+      - "7000:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  # Frontend Blazor
+  patients-frontend:
+    build:
+      context: ./frontend/Patients-Frontend/Patients-Frontend
+      dockerfile: Dockerfile
+    container_name: patients-frontend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ApiSettings__BaseUrl=http://api-gateway:8080
+    ports:
+      - "5000:8080"
+    depends_on:
+      - api-gateway
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge
+
+volumes:
+  sqlserver_data:

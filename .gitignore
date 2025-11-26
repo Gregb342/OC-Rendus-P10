@@ -10,3 +10,6 @@ obj/
 # Autres fichiers temporaires
 *.cache
 *.log
+
+# Environment files with sensitive data
+.env
