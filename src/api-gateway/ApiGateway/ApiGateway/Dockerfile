@@ -12,7 +12,7 @@ WORKDIR /src
 COPY ["ApiGateway.csproj", "./"]
 RUN dotnet restore "./ApiGateway.csproj"
 COPY . .
-WORKDIR "/src/."
+WORKDIR /src
 RUN dotnet build "./ApiGateway.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
