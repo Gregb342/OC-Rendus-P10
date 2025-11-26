@@ -1,0 +1,139 @@
+@page "/patients/edit/{Id:int}"
+@rendermode InteractiveServer
+@* @using Microsoft.AspNetCore.Authorization
+@attribute [Authorize] *@
+
+<PageTitle>Éditer le patient</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Éditer le patient</h3>
+                    <button class="btn btn-secondary" @onclick="Annuler">
+                        <i class="bi bi-x"></i> Annuler
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (IsLoading)
+                    {
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (ErrorMessage != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @ErrorMessage
+                        </div>
+                    }
+                    else if (PatientUpdate != null)
+                    {
+                        <EditForm Model="@PatientUpdate" OnValidSubmit="@HandleValidSubmit" FormName="EditPatientForm">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary class="text-danger" />
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="mb-3">Informations personnelles</h5>
+
+                                    <div class="mb-3">
+                                        <label for="firstName" class="form-label">Nom <span class="text-danger">*</span></label>
+                                        <InputText id="firstName" class="form-control" @bind-Value="PatientUpdate.FirstName" />
+                                        <ValidationMessage For="@(() => PatientUpdate.FirstName)" />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="lastName" class="form-label">Prénom <span class="text-danger">*</span></label>
+                                        <InputText id="lastName" class="form-control" @bind-Value="PatientUpdate.LastName" />
+                                        <ValidationMessage For="@(() => PatientUpdate.LastName)" />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="dateOfBirth" class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                                        <InputDate id="dateOfBirth" class="form-control" @bind-Value="PatientUpdate.DateOfBirth" />
+                                        <ValidationMessage For="@(() => PatientUpdate.DateOfBirth)" />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="gender" class="form-label">Sexe <span class="text-danger">*</span></label>
+                                        <InputSelect id="gender" class="form-select" @bind-Value="PatientUpdate.Gender">
+                                            <option value="">-- Sélectionner --</option>
+                                            <option value="M">Masculin</option>
+                                            <option value="F">Féminin</option>
+                                            <option value="Autre">Autre</option>
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => PatientUpdate.Gender)" />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="phoneNumber" class="form-label">Téléphone</label>
+                                        <InputText id="phoneNumber" class="form-control" @bind-Value="PatientUpdate.PhoneNumber" />
+                                        <ValidationMessage For="@(() => PatientUpdate.PhoneNumber)" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <h5 class="mb-3">Adresse</h5>
+
+                                    @if (PatientUpdate.Address == null)
+                                    {
+                                        <button type="button" class="btn btn-outline-primary mb-3" @onclick="AjouterAdresse">
+                                            <i class="bi bi-plus"></i> Ajouter une adresse
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <div class="mb-3">
+                                            <label for="street" class="form-label">Rue</label>
+                                            <InputText id="street" class="form-control" @bind-Value="PatientUpdate.Address.Street" />
+                                            <ValidationMessage For="@(() => PatientUpdate.Address.Street)" />
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="city" class="form-label">Ville</label>
+                                            <InputText id="city" class="form-control" @bind-Value="PatientUpdate.Address.City" />
+                                            <ValidationMessage For="@(() => PatientUpdate.Address.City)" />
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="postalCode" class="form-label">Code postal</label>
+                                            <InputText id="postalCode" class="form-control" @bind-Value="PatientUpdate.Address.PostalCode" />
+                                            <ValidationMessage For="@(() => PatientUpdate.Address.PostalCode)" />
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="country" class="form-label">Pays</label>
+                                            <InputText id="country" class="form-control" @bind-Value="PatientUpdate.Address.Country" />
+                                            <ValidationMessage For="@(() => PatientUpdate.Address.Country)" />
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-danger btn-sm" @onclick="SupprimerAdresse">
+                                            <i class="bi bi-trash"></i> Supprimer l'adresse
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary me-2" disabled="@IsSaving">
+                                    @if (IsSaving)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    }
+                                    <i class="bi bi-save"></i> Enregistrer
+                                </button>
+                                <button type="button" class="btn btn-secondary" @onclick="Annuler">
+                                    <i class="bi bi-x"></i> Annuler
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
