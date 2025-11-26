@@ -18,7 +18,7 @@ La solution est composée de plusieurs services dockerisés :
 
 ### Stack technique
 
-- **.NET 8.0** (ASP.NET Core, Blazor Server)
+- **.NET 9.0** (ASP.NET Core, Blazor Server)
 - **Ocelot** (API Gateway)
 - **PostgreSQL** (Base de données)
 - **Entity Framework Core** (ORM)
