@@ -158,7 +158,7 @@ docker-compose down -v
 
 ### API Gateway (Ocelot)
 
-La configuration des routes est définie dans `src/api-gateway/ApiGateway/ocelot.json`
+La configuration des routes est définie dans `src/api-gateway/ApiGateway/ApiGateway/ocelot.json`
 
 ### Variables d'environnement
 
