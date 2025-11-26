@@ -29,7 +29,7 @@ La solution est composée de plusieurs services dockerisés :
 
 - Docker Desktop installé et en cours d'exécution
 - Docker Compose
-- Port 80, 5000, 5432, 9000, 1514, 12201, 27017 disponibles
+- Port 80, 5000, 1433, 9000, 1514, 12201, 27017 disponibles
 
 ## 🚀 Installation et lancement
 
