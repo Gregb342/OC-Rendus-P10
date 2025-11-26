@@ -22,8 +22,6 @@ WORKDIR /app
 
 # Exposition du port 8080
 EXPOSE 8080
-EXPOSE 8081
-
 # Copie des fichiers publiés
 COPY --from=publish /app/publish .
 
