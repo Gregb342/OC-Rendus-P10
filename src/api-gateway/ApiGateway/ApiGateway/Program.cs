@@ -72,9 +72,7 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        // Créer la base de données si elle n'existe pas
-        authDbContext.Database.EnsureCreated();
-        // Appliquer les migrations
+        // Appliquer les migrations (crée la base si elle n'existe pas)
         authDbContext.Database.Migrate();
         Console.WriteLine("Base de données AuthDb créée et migrations appliquées avec succès");
     }
