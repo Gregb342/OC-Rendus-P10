@@ -328,17 +328,5 @@ PostalCode = "90210",
         };
     }
 
-    private Address CreateTestAddress(int id)
-    {
-        return new Address
-        {
-            Id = id,
-            Street = "123 Main St",
-            City = "New York",
-            PostalCode = "10001",
-            Country = "USA"
-        };
-    }
-
     #endregion
 }

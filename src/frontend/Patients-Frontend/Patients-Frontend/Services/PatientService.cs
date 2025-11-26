@@ -31,7 +31,7 @@ namespace Patients_Frontend.Services
 
         public async Task<bool> UpdatePatientAsync(int id, PatientUpdateDto patientUpdateDto)
         {
-            var result = await _apiService.PutAsync<PatientDto>($"/patients/{id}", patientUpdateDto);
+            await _apiService.PutAsync<PatientDto>($"/patients/{id}", patientUpdateDto);
             return true;
         }
 

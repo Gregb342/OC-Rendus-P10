@@ -11,7 +11,7 @@ namespace Patients_Frontend.Components.Pages
         [Inject] private IPatientService PatientService { get; set; } = default!;
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
-        private PatientUpdateDto? PatientUpdate = new();
+        private readonly PatientUpdateDto? PatientUpdate = new();
 
         private bool IsLoading = true;
         private bool IsSaving = false;

@@ -9,7 +9,7 @@ namespace Patients_Frontend.Components.Pages
         [Inject] private IPatientService PatientService { get; set; } = default!;
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
-        private PatientCreateDto NewPatient = new()
+        private readonly PatientCreateDto NewPatient = new()
         {
             DateOfBirth = DateTime.Today.AddYears(-30) // Date par défaut
         };
