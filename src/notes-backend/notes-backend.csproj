@@ -19,7 +19,6 @@
     <Folder Include="Domain\Services\Interfaces\" />
     <Folder Include="Infrastructure\Repositories\Interfaces\" />
     <Folder Include="DTOs\" />
-    <Folder Include="Data\" />
   </ItemGroup>
 
 </Project>
