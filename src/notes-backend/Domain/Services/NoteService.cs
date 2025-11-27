@@ -25,7 +25,7 @@ namespace notes_backend.Domain.Services
             }
             catch (MongoException ex)
             {
-                throw new ApplicationException($"Erreur à la récupération des dans mongoDb", ex);
+                throw new ApplicationException($"Erreur à la récupération des notes dans mongoDb", ex);
             }
 
         }

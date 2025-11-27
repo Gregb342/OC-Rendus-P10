@@ -1,8 +1,8 @@
-# Étape 1 : Build de l'application
+# ï¿½tape 1 : Build de l'application
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copie du fichier .csproj et restauration des dépendances
+# Copie du fichier .csproj et restauration des dï¿½pendances
 COPY ["notes-backend.csproj", "./"]
 RUN dotnet restore "notes-backend.csproj"
 
@@ -16,15 +16,15 @@ RUN dotnet build "notes-backend.csproj" -c Release -o /app/build
 FROM build AS publish
 RUN dotnet publish "notes-backend.csproj" -c Release -o /app/publish
 
-# Étape 2 : Image finale pour l'exécution
+# ï¿½tape 2 : Image finale pour l'exï¿½cution
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
-# Copie des fichiers publiés depuis l'étape précédente
+# Copie des fichiers publiï¿½s depuis l'ï¿½tape prï¿½cï¿½dente
 COPY --from=publish /app/publish .
 
 # Exposition du port 8080
 EXPOSE 8080
 
-# Point d'entrée de l'application
+# Point d'entrï¿½e de l'application
 ENTRYPOINT ["dotnet", "notes-backend.dll"]
