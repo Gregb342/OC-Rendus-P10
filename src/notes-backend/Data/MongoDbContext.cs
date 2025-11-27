@@ -8,21 +8,16 @@ namespace notes_backend.Data
     public class MongoDbContext
     {
         private readonly IMongoDatabase _database;
+        private readonly MongoDbSettings _settings;
 
         public MongoDbContext(IOptions<MongoDbSettings> settings)
         {
-            var client = new MongoClient(settings.Value.ConnectionString);
-            _database = client.GetDatabase(settings.Value.DatabaseName);
+            _settings = settings.Value;
+            var client = new MongoClient(_settings.ConnectionString);
+            _database = client.GetDatabase(_settings.DatabaseName);
         }
 
         public IMongoCollection<Note> Notes =>
-            _database.GetCollection<Note>(GetCollectionName());
-
-        private string GetCollectionName()
-        {
-            var settings = _database.Client.Settings;
-            return "Notes";
-        }
-    
+            _database.GetCollection<Note>(_settings.NotesCollectionName);
     }
 }
