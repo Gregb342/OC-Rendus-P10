@@ -21,7 +21,12 @@ builder.Services.AddOpenApi();
 
 // Configuration de la base d'auth
 builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AuthConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("AuthConnection"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null)));
 
 // Configuration Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
@@ -75,37 +80,37 @@ using (var scope = app.Services.CreateScope())
         // Appliquer les migrations (crée la base si elle n'existe pas)
         authDbContext.Database.Migrate();
         Console.WriteLine("Base de données AuthDb créée et migrations appliquées avec succès");
+
+        // Créer l'utilisateur admin par défaut (après la migration)
+        var adminUser = await userManager.FindByNameAsync("admin");
+        if (adminUser == null)
+        {
+            adminUser = new IdentityUser
+            {
+                UserName = "admin",
+                Email = "admin@example.com",
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(adminUser, "Admin123!");
+
+            if (result.Succeeded)
+            {
+                Console.WriteLine("Admin user created successfully!");
+            }
+            else
+            {
+                Console.WriteLine("Failed to create admin user:");
+                foreach (var error in result.Errors)
+                {
+                    Console.WriteLine($"  - {error.Description}");
+                }
+            }
+        }
     }
     catch (Exception ex)
     {
         Console.WriteLine($"Erreur lors de la création/migration de la base de données: {ex.Message}");
-    }
-
-    // Créer l'utilisateur admin par défaut
-    var adminUser = await userManager.FindByNameAsync("admin");
-    if (adminUser == null)
-    {
-        adminUser = new IdentityUser
-        {
-            UserName = "admin",
-            Email = "admin@example.com",
-            EmailConfirmed = true
-        };
-
-        var result = await userManager.CreateAsync(adminUser, "Admin123!");
-
-        if (result.Succeeded)
-        {
-            Console.WriteLine("Admin user created successfully!");
-        }
-        else
-        {
-            Console.WriteLine("Failed to create admin user:");
-            foreach (var error in result.Errors)
-            {
-                Console.WriteLine($"  - {error.Description}");
-            }
-        }
     }
 }
 
