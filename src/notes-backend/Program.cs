@@ -1,4 +1,5 @@
 
+using MongoDB.Driver;
 using notes_backend.Data;
 using notes_backend.Domain.Services;
 using notes_backend.Domain.Services.Interfaces;
@@ -31,6 +32,8 @@ namespace notes_backend
 
             var app = builder.Build();
 
+            SeedDatabase(app.Configuration);
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
@@ -43,6 +46,15 @@ namespace notes_backend
             app.MapControllers();
 
             app.Run();
+        }
+
+        private static void SeedDatabase(IConfiguration configuration)
+        {
+            var mongoDbSettings = configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
+            var client = new MongoClient(mongoDbSettings.ConnectionString);
+            var database = client.GetDatabase(mongoDbSettings.DatabaseName);
+
+            NotesSeed.SeedAsync(database).GetAwaiter().GetResult();
         }
     }
 }
