@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @* @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize] *@
+@using Patients_Frontend.Components.Notes;
 
 <PageTitle>Détails du patient</PageTitle>
 
@@ -106,6 +107,33 @@
                     }
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6"> 
+            <h4>Historique des notes du patient :</h4>
+            @if (!string.IsNullOrEmpty(NoteErrorMessage))
+            {
+                <div class="alert alert-info">
+                    @NoteErrorMessage
+                </div>
+            } 
+            else if (noteList is null)
+            { 
+                <p class="text-muted">Chargement des notes...</p>
+            }
+            else if (!noteList.Any())
+            {
+                <p class="text-muted">Aucune note pour ce patient.</p>
+            }
+            else
+            {
+                @foreach (var note in noteList.OrderByDescending(n => n.CreatedAt))
+                {
+                    <NoteItem Note="note" />
+                }
+            }
         </div>
     </div>
 </div>
