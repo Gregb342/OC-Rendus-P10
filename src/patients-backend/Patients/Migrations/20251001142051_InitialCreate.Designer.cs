@@ -339,9 +339,9 @@ namespace Patients.Migrations
                             Id = 1,
                             AddressId = 1,
                             DateOfBirth = new DateTime(1985, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FirstName = "John",
-                            Gender = "Male",
-                            LastName = "Doe",
+                            FirstName = "Test",
+                            Gender = "Female",
+                            LastName = "TestNone",
                             PhoneNumber = "555-123-4567"
                         },
                         new
@@ -349,9 +349,9 @@ namespace Patients.Migrations
                             Id = 2,
                             AddressId = 2,
                             DateOfBirth = new DateTime(1990, 3, 22, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FirstName = "Jane",
-                            Gender = "Female",
-                            LastName = "Smith",
+                            FirstName = "Test",
+                            Gender = "Male",
+                            LastName = "TestBorderline",
                             PhoneNumber = "555-234-5678"
                         },
                         new
@@ -359,9 +359,9 @@ namespace Patients.Migrations
                             Id = 3,
                             AddressId = 3,
                             DateOfBirth = new DateTime(1978, 9, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FirstName = "Michael",
+                            FirstName = "Test",
                             Gender = "Male",
-                            LastName = "Brown",
+                            LastName = "TestInDanger",
                             PhoneNumber = "555-345-6789"
                         },
                         new
@@ -369,9 +369,9 @@ namespace Patients.Migrations
                             Id = 4,
                             AddressId = 4,
                             DateOfBirth = new DateTime(1995, 12, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FirstName = "Emily",
+                            FirstName = "Test",
                             Gender = "Female",
-                            LastName = "Johnson",
+                            LastName = "TestEarlyOnset",
                             PhoneNumber = "555-456-7890"
                         });
                 });

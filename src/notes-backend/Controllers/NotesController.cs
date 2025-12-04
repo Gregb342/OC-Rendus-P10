@@ -7,7 +7,6 @@ namespace notes_backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class NotesController : ControllerBase
     {
         private readonly INoteService _noteService;

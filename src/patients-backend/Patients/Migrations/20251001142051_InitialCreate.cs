@@ -215,10 +215,10 @@ namespace Patients.Migrations
                 columns: new[] { "Id", "Address", "AddressId", "DateOfBirth", "FirstName", "Gender", "LastName", "PhoneNumber" },
                 values: new object[,]
                 {
-                    { 1, null, 1, new DateTime(1985, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "John", "Male", "Doe", "555-123-4567" },
-                    { 2, null, 2, new DateTime(1990, 3, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), "Jane", "Female", "Smith", "555-234-5678" },
-                    { 3, null, 3, new DateTime(1978, 9, 8, 0, 0, 0, 0, DateTimeKind.Unspecified), "Michael", "Male", "Brown", "555-345-6789" },
-                    { 4, null, 4, new DateTime(1995, 12, 30, 0, 0, 0, 0, DateTimeKind.Unspecified), "Emily", "Female", "Johnson", "555-456-7890" }
+                    { 1, null, 1, new DateTime(1985, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Test", "Female", "TestNone", "555-123-4567" },
+                    { 2, null, 2, new DateTime(1990, 3, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), "Test", "Male", "TestBorderline", "555-234-5678" },
+                    { 3, null, 3, new DateTime(1978, 9, 8, 0, 0, 0, 0, DateTimeKind.Unspecified), "Test", "Male", "TestInDanger", "555-345-6789" },
+                    { 4, null, 4, new DateTime(1995, 12, 30, 0, 0, 0, 0, DateTimeKind.Unspecified), "Test", "Female", "TestEarlyOnset", "555-456-7890" }
                 });
 
             migrationBuilder.CreateIndex(
