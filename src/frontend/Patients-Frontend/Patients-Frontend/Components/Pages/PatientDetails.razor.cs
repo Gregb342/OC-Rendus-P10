@@ -10,6 +10,7 @@ namespace Patients_Frontend.Components.Pages
         [Parameter] public int Id { get; set; }
 
         [Inject] private IPatientService PatientService { get; set; } = default!;
+        [Inject] private INoteService NoteService { get; set; } = default!;
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
         private PatientDto? Patient;
