@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using notes_backend.Domain.Services.Interfaces;
 using notes_backend.DTOs;
 
@@ -6,6 +7,7 @@ namespace notes_backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class NotesController : ControllerBase
     {
         private readonly INoteService _noteService;
