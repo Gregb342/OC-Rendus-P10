@@ -113,6 +113,9 @@
     <div class="row">
         <div class="col-md-6"> 
             <h4>Historique des notes du patient :</h4>
+            <button class="btn btn-sm btn-success" @onclick="AjouterNote">
+                <i class="bi bi-plus-lg"></i> Ajouter une note
+            </button>
             @if (!string.IsNullOrEmpty(NoteErrorMessage))
             {
                 <div class="alert alert-info">

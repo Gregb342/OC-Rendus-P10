@@ -109,5 +109,11 @@ namespace Patients_Frontend.Components.Pages
         {
             NavigationManager.NavigateTo("/");
         }
+
+        private void AjouterNote()
+        {
+            NavigationManager.NavigateTo($"/patients/{Id}/notes/create");
+        }
+
     }
 }
