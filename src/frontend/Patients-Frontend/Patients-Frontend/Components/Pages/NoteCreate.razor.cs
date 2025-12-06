@@ -10,7 +10,7 @@ namespace Patients_Frontend.Components.Pages
         [Inject] private INoteService NoteService { get; set; } = default!;
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
-        private NoteCreateDto Note = new();
+        private readonly NoteCreateDto Note = new();
         private bool IsSubmitting;
 
         protected override void OnInitialized()
