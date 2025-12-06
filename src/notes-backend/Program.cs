@@ -55,10 +55,11 @@ namespace notes_backend
                 throw new InvalidOperationException("MongoDbSettings configuration is missing");
             }
             
-            var client = new MongoClient(mongoDbSettings.ConnectionString);
-            var database = client.GetDatabase(mongoDbSettings.DatabaseName);
-
-            NotesSeed.SeedAsync(database).GetAwaiter().GetResult();
+            using (var client = new MongoClient(mongoDbSettings.ConnectionString))
+            {
+                var database = client.GetDatabase(mongoDbSettings.DatabaseName);
+                NotesSeed.SeedAsync(database).GetAwaiter().GetResult();
+            }
         }
     }
 }
