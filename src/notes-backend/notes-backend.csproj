@@ -13,4 +13,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="unitTests/**" />
+    <EmbeddedResource Remove="unitTests/**" />
+    <None Remove="unitTests/**" />
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,3 @@
-
 using MongoDB.Driver;
 using notes_backend.Data;
 using notes_backend.Domain.Services;
@@ -51,6 +50,11 @@ namespace notes_backend
         private static void SeedDatabase(IConfiguration configuration)
         {
             var mongoDbSettings = configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
+            if (mongoDbSettings == null)
+            {
+                throw new InvalidOperationException("MongoDbSettings configuration is missing");
+            }
+            
             var client = new MongoClient(mongoDbSettings.ConnectionString);
             var database = client.GetDatabase(mongoDbSettings.DatabaseName);
 
