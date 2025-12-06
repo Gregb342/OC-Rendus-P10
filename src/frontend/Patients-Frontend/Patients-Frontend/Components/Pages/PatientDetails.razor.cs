@@ -35,7 +35,7 @@ namespace Patients_Frontend.Components.Pages
 
                 if (Patient == null)
                 {
-                    ErrorMessage = "Patient non trouvé";
+                    ErrorMessage = "Patient non trouvÃ©";
                 }
             }
             catch (Exception ex)
@@ -57,7 +57,7 @@ namespace Patients_Frontend.Components.Pages
             if (notes == null || !notes.Any())
             {
                 noteList = new List<NoteDto>();
-                NoteErrorMessage = "Pas de notes trouvées pour ce patient";
+                NoteErrorMessage = "Pas de notes trouvÃ©es pour ce patient";
             }
             else
             {
