@@ -1,4 +1,4 @@
-﻿using MongoDB.Driver;
+using MongoDB.Driver;
 using notes_backend.Domain.Entities;
 
 public class NotesSeed
