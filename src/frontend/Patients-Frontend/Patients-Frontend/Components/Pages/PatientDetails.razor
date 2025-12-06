@@ -2,15 +2,16 @@
 @rendermode InteractiveServer
 @* @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize] *@
+@using Patients_Frontend.Components.Notes;
 
-<PageTitle>Détails du patient</PageTitle>
+<PageTitle>DÃ©tails du patient</PageTitle>
 
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Détails du patient</h3>
+                    <h3 class="card-title mb-0">DÃ©tails du patient</h3>
                     <button class="btn btn-secondary" @onclick="RetourListe">
                         <i class="bi bi-arrow-left"></i> Retour
                     </button>
@@ -42,7 +43,7 @@
                                             <td>@Patient.FirstName</td>
                                         </tr>
                                         <tr>
-                                            <th scope="row" class="text-muted">Prénom :</th>
+                                            <th scope="row" class="text-muted">PrÃ©nom :</th>
                                             <td>@Patient.LastName</td>
                                         </tr>
                                         <tr>
@@ -50,7 +51,7 @@
                                             <td>@Patient.DateOfBirth.ToString("dd/MM/yyyy")</td>
                                         </tr>
                                         <tr>
-                                            <th scope="row" class="text-muted">Âge :</th>
+                                            <th scope="row" class="text-muted">Ã‚ge :</th>
                                             <td>@CalculerAge() ans</td>
                                         </tr>
                                         <tr>
@@ -58,8 +59,8 @@
                                             <td>@Patient.Gender</td>
                                         </tr>
                                         <tr>
-                                            <th scope="row" class="text-muted">Téléphone :</th>
-                                            <td>@(string.IsNullOrEmpty(Patient.PhoneNumber) ? "Non renseigné" : Patient.PhoneNumber)</td>
+                                            <th scope="row" class="text-muted">TÃ©lÃ©phone :</th>
+                                            <td>@(string.IsNullOrEmpty(Patient.PhoneNumber) ? "Non renseignÃ©" : Patient.PhoneNumber)</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -91,13 +92,13 @@
                                 }
                                 else
                                 {
-                                    <p class="text-muted">Aucune adresse renseignée</p>
+                                    <p class="text-muted">Aucune adresse renseignÃ©e</p>
                                 }
                             </div>
                         </div>
                         <div class="mt-4">
                             <button class="btn btn-primary me-2" @onclick="EditerPatient">
-                                <i class="bi bi-pencil"></i> Éditer
+                                <i class="bi bi-pencil"></i> Ã‰diter
                             </button>
                             <button class="btn btn-danger" @onclick="SupprimerPatient">
                                 <i class="bi bi-trash"></i> Supprimer
@@ -106,6 +107,36 @@
                     }
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6"> 
+            <h4>Historique des notes du patient :</h4>
+            <button class="btn btn-sm btn-success" @onclick="AjouterNote">
+                <i class="bi bi-plus-lg"></i> Ajouter une note
+            </button>
+            @if (!string.IsNullOrEmpty(NoteErrorMessage))
+            {
+                <div class="alert alert-info">
+                    @NoteErrorMessage
+                </div>
+            } 
+            else if (noteList is null)
+            { 
+                <p class="text-muted">Chargement des notes...</p>
+            }
+            else if (!noteList.Any())
+            {
+                <p class="text-muted">Aucune note pour ce patient.</p>
+            }
+            else
+            {
+                @foreach (var note in noteList.OrderByDescending(n => n.CreatedAt))
+                {
+                    <NoteItem Note="note" />
+                }
+            }
         </div>
     </div>
 </div>

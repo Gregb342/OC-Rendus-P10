@@ -28,15 +28,15 @@ public class PatientServiceTests
 
         // Create DbContextOptions for the mock context
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-      .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-    .Options;
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
         _mockContext = new Mock<ApplicationDbContext>(options, _mockHttpContextAccessor.Object);
 
         _patientService = new PatientService(
-         _mockPatientRepository.Object,
-  _mockAddressRepository.Object,
-_mockContext.Object,
-    _mockHttpContextAccessor.Object,
+            _mockPatientRepository.Object,
+            _mockAddressRepository.Object,
+            _mockContext.Object,
+            _mockHttpContextAccessor.Object,
             _mockLogger.Object);
     }
 

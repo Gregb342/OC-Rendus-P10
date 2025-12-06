@@ -398,10 +398,10 @@ namespace Patients.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "System",
                             DateOfBirth = new DateTime(1985, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FirstName = "John",
-                            Gender = "Male",
+                            FirstName = "Test",
+                            Gender = "Female",
                             IsDeleted = false,
-                            LastName = "Doe",
+                            LastName = "TestNone",
                             PhoneNumber = "555-123-4567"
                         },
                         new
@@ -411,10 +411,10 @@ namespace Patients.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "System",
                             DateOfBirth = new DateTime(1990, 3, 22, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FirstName = "Jane",
-                            Gender = "Female",
+                            FirstName = "Test",
+                            Gender = "Male",
                             IsDeleted = false,
-                            LastName = "Smith",
+                            LastName = "TestBorderline",
                             PhoneNumber = "555-234-5678"
                         },
                         new
@@ -424,10 +424,10 @@ namespace Patients.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "System",
                             DateOfBirth = new DateTime(1978, 9, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FirstName = "Michael",
+                            FirstName = "Test",
                             Gender = "Male",
                             IsDeleted = false,
-                            LastName = "Brown",
+                            LastName = "TestInDanger",
                             PhoneNumber = "555-345-6789"
                         },
                         new
@@ -437,10 +437,10 @@ namespace Patients.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "System",
                             DateOfBirth = new DateTime(1995, 12, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FirstName = "Emily",
+                            FirstName = "Test",
                             Gender = "Female",
                             IsDeleted = false,
-                            LastName = "Johnson",
+                            LastName = "TestEarlyOnset",
                             PhoneNumber = "555-456-7890"
                         });
                 });
