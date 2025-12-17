@@ -76,6 +76,31 @@ services:
     networks:
       - microservices-network
 
+  # Backend Assessments
+  assessments-backend:
+    build:
+      context: ./Assessments_backend/Assessments_backend
+      dockerfile: Dockerfile
+    container_name: assessments-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ApiGateway__BaseUrl=http://api-gateway:8080
+      - JWT__ValidAudience=https://localhost:5001
+      - JWT__ValidIssuer=https://localhost:5001
+      - JWT__Secret=SuperSecretKeyForDevThatIsAtLeast32CharactersLong123456789
+      - Logging__Serilog__Graylog__HostnameOrAddress=127.0.0.1
+      - Logging__Serilog__Graylog__Port=12201
+      - Logging__Serilog__Graylog__Facility=AssessmentsBackend
+      - Logging__Serilog__Graylog__TransportType=Udp
+      - Logging__Serilog__Graylog__ShortMessageMaxLength=5000
+    ports:
+      - "5084:8080"
+    depends_on:
+      - api-gateway
+    networks:
+      - microservices-network
+
   # API Gateway
   api-gateway:
     build:

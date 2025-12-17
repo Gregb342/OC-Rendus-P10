@@ -76,6 +76,22 @@
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
+    },
+    // Partie API "Assessments"
+    {
+      "DownstreamPathTemplate": "/api/assessment/patient/{patientId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessments-backend",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/assessment/patient/{patientId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     }
   ],
   "GlobalConfiguration": {
