@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using notes_backend.Data;
 using notes_backend.Domain.Services;
@@ -5,6 +7,7 @@ using notes_backend.Domain.Services.Interfaces;
 using notes_backend.Infrastructure.Repositories;
 using notes_backend.Infrastructure.Repositories.Interfaces;
 using notes_backend.Infrastructure.Settings;
+using System.Text;
 
 namespace notes_backend
 {
@@ -25,6 +28,30 @@ namespace notes_backend
 
             builder.Services.AddControllers();
 
+            // --- Authentication / JWT ---
+            var jwtSection = builder.Configuration.GetSection("JWT");
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
+                    ValidAudience = jwtSection["ValidAudience"],
+                    ValidIssuer = jwtSection["ValidIssuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Secret"] ?? ""))
+                };
+            });
+
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -40,6 +67,7 @@ namespace notes_backend
                 app.UseSwaggerUI();
             }
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
