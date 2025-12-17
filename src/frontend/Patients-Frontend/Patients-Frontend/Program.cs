@@ -44,6 +44,8 @@ namespace Patients_Frontend
 
             // Enregistrement des services
             builder.Services.AddScoped<IPatientService, PatientService>();
+            builder.Services.AddScoped<INoteService, NoteService>();
+            builder.Services.AddScoped<IAssessmentService, AssessmentService>();
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
             var app = builder.Build();

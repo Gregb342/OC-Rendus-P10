@@ -19,6 +19,25 @@ services:
       timeout: 5s
       retries: 5
 
+  # Base de données MongoDB
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=AdminPassword123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Backend Patients
   patients-backend:
     build:
@@ -34,6 +53,51 @@ services:
     depends_on:
       sqlserver:
         condition: service_healthy
+    networks:
+      - microservices-network
+
+  # Backend Notes
+  notes-backend:
+    build:
+      context: ./notes-backend
+      dockerfile: Dockerfile
+    container_name: notes-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - MongoDbSettings__ConnectionString=mongodb://admin:AdminPassword123@mongodb:27017
+      - MongoDbSettings__DatabaseName=NotesDb
+      - MongoDbSettings__NotesCollectionName=Notes
+    ports:
+      - "5083:8080"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  # Backend Assessments
+  assessments-backend:
+    build:
+      context: ./Assessments_backend/Assessments_backend
+      dockerfile: Dockerfile
+    container_name: assessments-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ApiGateway__BaseUrl=http://api-gateway:8080
+      - JWT__ValidAudience=https://localhost:5001
+      - JWT__ValidIssuer=https://localhost:5001
+      - JWT__Secret=SuperSecretKeyForDevThatIsAtLeast32CharactersLong123456789
+      - Logging__Serilog__Graylog__HostnameOrAddress=127.0.0.1
+      - Logging__Serilog__Graylog__Port=12201
+      - Logging__Serilog__Graylog__Facility=AssessmentsBackend
+      - Logging__Serilog__Graylog__TransportType=Udp
+      - Logging__Serilog__Graylog__ShortMessageMaxLength=5000
+    ports:
+      - "5084:8080"
+    depends_on:
+      - api-gateway
     networks:
       - microservices-network
 
@@ -78,3 +142,4 @@ networks:
 
 volumes:
   sqlserver_data:
+  mongodb_data:

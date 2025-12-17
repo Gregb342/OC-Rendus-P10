@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="notes-backend.csproj" />
+  <Project Path="unitTests/Notes.UnitTests/Notes.UnitTests.csproj" Id="a085cc76-9dde-4174-ad89-f2fdb6f7afbb" />
+</Solution>

@@ -1,0 +1,24 @@
+@rendermode InteractiveServer
+@using Patients_Frontend.Services.Interfaces
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<button class="btn btn-outline-danger btn-sm" @onclick="HandleLogout">
+    <i class="bi bi-box-arrow-right me-1"></i>
+    Déconnexion
+</button>
+
+@code {
+    private async Task HandleLogout()
+    {
+        try
+        {
+            await AuthService.LogoutAsync();
+            NavigationManager.NavigateTo("/login?loggedout=true", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la déconnexion : {ex.Message}");
+        }
+    }
+}

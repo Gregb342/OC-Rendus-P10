@@ -38,7 +38,7 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="lastName" class="form-label">Prénom <span class="text-danger">*</span></label>
+                                    <label for="lastName" class="form-label">Prï¿½nom <span class="text-danger">*</span></label>
                                     <InputText id="lastName" class="form-control" @bind-Value="NewPatient.LastName" />
                                     <ValidationMessage For="@(() => NewPatient.LastName)" />
                                 </div>
@@ -52,16 +52,16 @@
                                 <div class="mb-3">
                                     <label for="gender" class="form-label">Sexe <span class="text-danger">*</span></label>
                                     <InputSelect id="gender" class="form-select" @bind-Value="NewPatient.Gender">
-                                        <option value="">-- Sélectionner --</option>
+                                        <option value="">-- Sï¿½lectionner --</option>
                                         <option value="M">Masculin</option>
-                                        <option value="F">Féminin</option>
+                                        <option value="F">Fï¿½minin</option>
                                         <option value="Autre">Autre</option>
                                     </InputSelect>
                                     <ValidationMessage For="@(() => NewPatient.Gender)" />
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="phoneNumber" class="form-label">Téléphone</label>
+                                    <label for="phoneNumber" class="form-label">Tï¿½lï¿½phone</label>
                                     <InputText id="phoneNumber" class="form-control" @bind-Value="NewPatient.PhoneNumber" />
                                     <ValidationMessage For="@(() => NewPatient.PhoneNumber)" />
                                 </div>
@@ -115,7 +115,7 @@
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                 }
-                                <i class="bi bi-plus-circle"></i> Créer le patient
+                                <i class="bi bi-plus-circle"></i> Crï¿½er le patient
                             </button>
                             <button type="button" class="btn btn-secondary" @onclick="Annuler">
                                 <i class="bi bi-x"></i> Annuler

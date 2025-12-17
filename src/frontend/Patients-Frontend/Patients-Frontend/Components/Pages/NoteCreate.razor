@@ -1,0 +1,37 @@
+@page "/patients/{PatientId:int}/notes/create"
+@rendermode InteractiveServer
+
+<PageTitle>Ajouter une note</PageTitle>
+
+<h3>Ajouter une note pour le patient @PatientId</h3>
+
+@if (IsSubmitting)
+{
+    <p>Enregistrement en cours...</p>
+}
+else
+{
+    <EditForm Model="Note" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Nom du médecin</label>
+            <InputText class="form-control" @bind-Value="Note.DoctorName" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Contenu de la note</label>
+            <InputTextArea class="form-control" @bind-Value="Note.NoteContent" rows="6" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Enregistrer la note
+        </button>
+        <button type="button" class="btn btn-secondary ms-2" @onclick="Annuler">
+            Annuler
+        </button>
+    </EditForm>
+}
+
+

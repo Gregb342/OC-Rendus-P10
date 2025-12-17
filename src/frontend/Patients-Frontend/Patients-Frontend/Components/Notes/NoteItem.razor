@@ -1,0 +1,30 @@
+@using Patients_Frontend.DTOs;
+
+@if (Note is not null)
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">
+                Note
+                <small class="text-muted">
+                    — créée le @Note.CreatedAt.ToString("dd/MM/yyyy")
+                </small>
+            </h5>
+
+            @if (!string.IsNullOrWhiteSpace(Note.DoctorName))
+            {
+                <p class="text-muted mb-1">
+                    Médecin : @Note.DoctorName
+                </p>
+            }
+
+            <p class="mb-0" style="white-space: pre-wrap; word-wrap: break-word;">@Note.NoteContent</p>
+        </div>
+    </div>
+}
+
+@code
+{
+    [Parameter]
+    public NoteDto? Note { get; set; }
+}
