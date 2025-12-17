@@ -104,7 +104,6 @@ namespace Assessments_backend.Services
             var age = GetAge(patient.DateOfBirth);
             var gender = patient.Gender?.ToLowerInvariant();
 
-            // 1) Aucun trigger → aucun risque
             if (triggerCount == 0)
             {
                 return RiskLevel.None;
@@ -114,7 +113,6 @@ namespace Assessments_backend.Services
 
             if (age > thresholdAge)
             {
-                // > 30 ans
                 if (triggerCount >= 8)
                     return RiskLevel.EarlyOnset;
 
@@ -124,7 +122,6 @@ namespace Assessments_backend.Services
                 if (triggerCount >= 2 && triggerCount <= 5)
                     return RiskLevel.BorderLine;
 
-                // 1 seul trigger → pas suffisant pour un diagnostic
                 return RiskLevel.None;
             }
             else
@@ -155,7 +152,6 @@ namespace Assessments_backend.Services
                     return RiskLevel.None;
                 }
 
-                // Genre inconnu / non renseigné → on reste prudent
                 return RiskLevel.None;
             }
         }
