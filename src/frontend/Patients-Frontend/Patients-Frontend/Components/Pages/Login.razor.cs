@@ -8,8 +8,12 @@ namespace Patients_Frontend.Components.Pages
         [SupplyParameterFromForm]
         private LoginDto loginModel { get; set; } = new();
 
+        [SupplyParameterFromQuery(Name = "loggedout")]
+        private bool? LoggedOut { get; set; }
+
         private bool IsLogging = false;
         private string? ErrorMessage;
+        private bool ShowLogoutMessage => LoggedOut == true;
 
         private async Task HandleLogin()
         {
@@ -22,12 +26,17 @@ namespace Patients_Frontend.Components.Pages
 
                 if (success)
                 {
-                    StateHasChanged();
+                    // Redirection sans forceLoad pour éviter NavigationException
+                    Navigation.NavigateTo("/");
                 }
                 else
                 {
                     ErrorMessage = "Nom d'utilisateur ou mot de passe incorrect.";
                 }
+            }
+            catch (Microsoft.AspNetCore.Components.NavigationException)
+            {
+                // Navigation réussie, ignorer l'exception
             }
             catch (Exception ex)
             {
