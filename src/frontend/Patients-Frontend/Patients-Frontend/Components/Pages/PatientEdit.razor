@@ -1,16 +1,14 @@
 @page "/patients/edit/{Id:int}"
 @rendermode InteractiveServer
-@* @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize] *@
 
-<PageTitle>Éditer le patient</PageTitle>
+<PageTitle>ï¿½diter le patient</PageTitle>
 
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Éditer le patient</h3>
+                    <h3 class="card-title mb-0">ï¿½diter le patient</h3>
                     <button class="btn btn-secondary" @onclick="Annuler">
                         <i class="bi bi-x"></i> Annuler
                     </button>
@@ -47,7 +45,7 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label for="lastName" class="form-label">Prénom <span class="text-danger">*</span></label>
+                                        <label for="lastName" class="form-label">Prï¿½nom <span class="text-danger">*</span></label>
                                         <InputText id="lastName" class="form-control" @bind-Value="PatientUpdate.LastName" />
                                         <ValidationMessage For="@(() => PatientUpdate.LastName)" />
                                     </div>
@@ -61,16 +59,16 @@
                                     <div class="mb-3">
                                         <label for="gender" class="form-label">Sexe <span class="text-danger">*</span></label>
                                         <InputSelect id="gender" class="form-select" @bind-Value="PatientUpdate.Gender">
-                                            <option value="">-- Sélectionner --</option>
+                                            <option value="">-- Sï¿½lectionner --</option>
                                             <option value="M">Masculin</option>
-                                            <option value="F">Féminin</option>
+                                            <option value="F">Fï¿½minin</option>
                                             <option value="Autre">Autre</option>
                                         </InputSelect>
                                         <ValidationMessage For="@(() => PatientUpdate.Gender)" />
                                     </div>
 
                                     <div class="mb-3">
-                                        <label for="phoneNumber" class="form-label">Téléphone</label>
+                                        <label for="phoneNumber" class="form-label">Tï¿½lï¿½phone</label>
                                         <InputText id="phoneNumber" class="form-control" @bind-Value="PatientUpdate.PhoneNumber" />
                                         <ValidationMessage For="@(() => PatientUpdate.PhoneNumber)" />
                                     </div>
