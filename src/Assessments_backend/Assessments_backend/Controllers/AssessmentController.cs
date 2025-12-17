@@ -65,7 +65,14 @@ namespace Assessments_backend.Controllers
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Service indisponible lors de l'évaluation du patient {PatientId}", patientId);
+                // Vérifier si c'est une erreur 404 (patient inexistant)
+                if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    _logger.LogWarning(ex, "Le patient {PatientId} n'existe pas dans le système", patientId);
+                    return NotFound(new { message = $"Le patient avec l'ID {patientId} n'existe pas" });
+                }
+                
+                _logger.LogError(ex, "Échec de la communication avec les services externes pour le patient {PatientId}", patientId);
                 return StatusCode(StatusCodes.Status503ServiceUnavailable, 
                     new { message = "Service temporairement indisponible", details = ex.Message });
             }

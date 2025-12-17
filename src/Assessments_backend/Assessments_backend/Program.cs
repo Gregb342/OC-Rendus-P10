@@ -1,5 +1,7 @@
 using Assessments_backend.Repositories;
 using Assessments_backend.Repositories.Interfaces;
+using Assessments_backend.Services;
+using Assessments_backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -66,6 +68,16 @@ builder.Services.AddHttpClient<IPatientDataProvider, PatientDataProvider>(client
 {
     client.BaseAddress = new Uri(apiGatewayUrl);
 });
+
+// Configurer HttpClient pour NoteDataProvider avec l'URL de l'API Gateway
+builder.Services.AddHttpClient<INoteDataProvider, NoteDataProvider>(client =>
+{
+    client.BaseAddress = new Uri(apiGatewayUrl);
+});
+
+// Enregistrer les services
+builder.Services.AddScoped<IAssessmentService, AssessmentService>();
+builder.Services.AddScoped<IRiskEvaluator, RiskEvaluator>();
 
 var app = builder.Build();
 
