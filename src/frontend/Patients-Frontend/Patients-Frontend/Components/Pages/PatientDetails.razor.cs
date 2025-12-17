@@ -11,17 +11,22 @@ namespace Patients_Frontend.Components.Pages
 
         [Inject] private IPatientService PatientService { get; set; } = default!;
         [Inject] private INoteService NoteService { get; set; } = default!;
+        [Inject] private IAssessmentService AssessmentService { get; set; } = default!;
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
         private PatientDto? Patient;
+        private AssessmentResultDto? Assessment;
         private List<NoteDto> noteList = new();
         private bool IsLoading = true;
+        private bool IsLoadingAssessment = true;
         private string? ErrorMessage;
         private string? NoteErrorMessage;
+        private string? AssessmentErrorMessage;
 
         protected override async Task OnInitializedAsync()
         {
             await LoadPatientAsync();
+            await LoadAssessmentAsync();
             await LoadNoteListByPatientAsync(Id);
         }
 
@@ -47,7 +52,6 @@ namespace Patients_Frontend.Components.Pages
                 IsLoading = false;
             }
         }
-
         private async Task LoadNoteListByPatientAsync(int patientId)
         {
             NoteErrorMessage = null;
@@ -63,6 +67,57 @@ namespace Patients_Frontend.Components.Pages
             {
                 noteList = notes.ToList();
             }
+        }
+
+        private async Task LoadAssessmentAsync()
+        {
+            try
+            {
+                IsLoadingAssessment = true;
+                AssessmentErrorMessage = null;
+                Assessment = await AssessmentService.GetPatientAssessmentAsync(Id);
+
+                if (Assessment == null)
+                {
+                    AssessmentErrorMessage = "Impossible de calculer le risque de diabète";
+                }
+            }
+            catch (Exception ex)
+            {
+                AssessmentErrorMessage = $"Erreur lors du calcul du risque : {ex.Message}";
+            }
+            finally
+            {
+                IsLoadingAssessment = false;
+            }
+        }
+
+        private string GetRiskLevelText()
+        {
+            if (Assessment == null) return "Inconnu";
+
+            return Assessment.RiskLevel switch
+            {
+                RiskLevel.None => "Aucun risque",
+                RiskLevel.Borderline => "Risque limité",
+                RiskLevel.InDanger => "En danger",
+                RiskLevel.EarlyOnset => "Apparition précoce",
+                _ => "Inconnu"
+            };
+        }
+
+        private string GetRiskLevelClass()
+        {
+            if (Assessment == null) return "secondary";
+
+            return Assessment.RiskLevel switch
+            {
+                RiskLevel.None => "success",
+                RiskLevel.Borderline => "warning",
+                RiskLevel.InDanger => "danger",
+                RiskLevel.EarlyOnset => "danger",
+                _ => "secondary"
+            };
         }
 
         private int CalculerAge()

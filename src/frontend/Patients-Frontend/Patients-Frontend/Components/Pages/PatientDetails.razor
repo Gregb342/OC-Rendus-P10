@@ -2,7 +2,8 @@
 @rendermode InteractiveServer
 @* @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize] *@
-@using Patients_Frontend.Components.Notes;
+@using Patients_Frontend.Components.Notes
+@using Patients_Frontend.DTOs
 
 <PageTitle>Détails du patient</PageTitle>
 
@@ -110,33 +111,101 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-6"> 
-            <h4>Historique des notes du patient :</h4>
-            <button class="btn btn-sm btn-success" @onclick="AjouterNote">
-                <i class="bi bi-plus-lg"></i> Ajouter une note
-            </button>
-            @if (!string.IsNullOrEmpty(NoteErrorMessage))
-            {
-                <div class="alert alert-info">
-                    @NoteErrorMessage
+    @* Section Évaluation du risque de diabète *@
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0"><i class="bi bi-activity"></i> Évaluation du risque de diabète</h4>
                 </div>
-            } 
-            else if (noteList is null)
-            { 
-                <p class="text-muted">Chargement des notes...</p>
-            }
-            else if (!noteList.Any())
-            {
-                <p class="text-muted">Aucune note pour ce patient.</p>
-            }
-            else
-            {
-                @foreach (var note in noteList.OrderByDescending(n => n.CreatedAt))
-                {
-                    <NoteItem Note="note" />
-                }
-            }
+                <div class="card-body">
+                    @if (IsLoadingAssessment)
+                    {
+                        <div class="text-center">
+                            <div class="spinner-border text-primary spinner-border-sm" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <span class="ms-2">Calcul du risque en cours...</span>
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(AssessmentErrorMessage))
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> @AssessmentErrorMessage
+                        </div>
+                    }
+                    else if (Assessment != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Niveau de risque</h5>
+                                <div class="alert alert-@GetRiskLevelClass() d-flex align-items-center" role="alert">
+                                    <i class="bi bi-shield-@(Assessment.RiskLevel == RiskLevel.None ? "check" : "exclamation") fs-3 me-3"></i>
+                                    <div>
+                                        <h4 class="mb-0">@GetRiskLevelText()</h4>
+                                        <small>Évalué le @Assessment.AssessedAt.ToString("dd/MM/yyyy à HH:mm")</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Détails de l'évaluation</h5>
+                                <p><strong>Nombre de déclencheurs :</strong> @Assessment.TriggerCount</p>
+                                @if (Assessment.MatchedTrigers.Any())
+                                {
+                                    <p><strong>Déclencheurs détectés :</strong></p>
+                                    <ul class="list-unstyled">
+                                        @foreach (var trigger in Assessment.MatchedTrigers)
+                                        {
+                                            <li><i class="bi bi-check-circle text-danger"></i> @trigger</li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Aucun déclencheur détecté</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Section Notes *@
+    <div class="row mt-4">
+        <div class="col-md-12"> 
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0"><i class="bi bi-journal-text"></i> Historique des notes du patient</h4>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-sm btn-success mb-3" @onclick="AjouterNote">
+                        <i class="bi bi-plus-lg"></i> Ajouter une note
+                    </button>
+                    @if (!string.IsNullOrEmpty(NoteErrorMessage))
+                    {
+                        <div class="alert alert-info">
+                            @NoteErrorMessage
+                        </div>
+                    } 
+                    else if (noteList is null)
+                    { 
+                        <p class="text-muted">Chargement des notes...</p>
+                    }
+                    else if (!noteList.Any())
+                    {
+                        <p class="text-muted">Aucune note pour ce patient.</p>
+                    }
+                    else
+                    {
+                        @foreach (var note in noteList.OrderByDescending(n => n.CreatedAt))
+                        {
+                            <NoteItem Note="note" />
+                        }
+                    }
+                </div>
+            </div>
         </div>
     </div>
 </div>
